@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   id="svg8"
+   version="1.1"
+   viewBox="0 0 103.41798 103.63347"
+   height="103.63347mm"
+   width="103.41798mm"
+   inkscape:version="1.0 (4035a4fb49, 2020-05-01)"
+   sodipodi:docname="dfu.svg">
+  <defs
+     id="defs2" />
+  <sodipodi:namedview
+     id="base"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageopacity="0.0"
+     inkscape:pageshadow="2"
+     inkscape:zoom="0.98994949"
+     inkscape:cx="283.1694"
+     inkscape:cy="242.16145"
+     inkscape:document-units="mm"
+     inkscape:current-layer="layer1"
+     inkscape:document-rotation="0"
+     showgrid="false"
+     inkscape:window-width="1920"
+     inkscape:window-height="1027"
+     inkscape:window-x="1912"
+     inkscape:window-y="597"
+     inkscape:window-maximized="1"
+     fit-margin-top="0"
+     fit-margin-left="0"
+     fit-margin-right="0"
+     fit-margin-bottom="0"
+     inkscape:snap-page="true" />
+  <metadata
+     id="metadata5">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title />
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <g
+     inkscape:label="Ebene 1"
+     inkscape:groupmode="layer"
+     id="layer1"
+     transform="translate(-4.7471472,-19.964102)">
+    <path
+       id="path1052"
+       style="fill:#ffffff;fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:0.799999;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:1.51181;stroke-opacity:1;paint-order:normal"
+       inkscape:transform-center-x="-0.73627848"
+       inkscape:transform-center-y="1.1285887"
+       d="M 54.231465,19.964102 A 51.850284,51.850284 0 0 0 43.127234,21.645653 L 42.26062,35.254642 a 39.154983,39.154983 0 0 0 -6.153113,3.026172 L 24.895271,30.584125 a 51.850284,51.850284 0 0 0 -8.156091,7.782472 l 7.245036,11.434961 a 39.154983,39.154983 0 0 0 -3.403927,6.145361 L 6.9030881,56.313306 A 51.850284,51.850284 0 0 0 4.7471472,67.209797 l 12.4963948,4.958352 a 39.154983,39.154983 0 0 0 0.831474,7.636746 l -10.8711713,8.35194 a 51.850284,51.850284 0 0 0 4.4576093,9.82679 l 12.970784,-3.31969 a 39.154983,39.154983 0 0 0 5.75107,6.370155 l -3.873148,13.10515 a 51.850284,51.850284 0 0 0 9.092468,5.12733 l 8.541079,-10.30893 a 39.154983,39.154983 0 0 0 9.202023,1.84692 l 4.538742,12.79301 a 51.850284,51.850284 0 0 0 10.105843,-1.29139 l 0.854212,-13.41365 a 39.154983,39.154983 0 0 0 8.808762,-4.24109 l 11.108883,7.62486 a 51.850284,51.850284 0 0 0 7.266742,-7.07554 L 88.785945,93.768895 a 39.154983,39.154983 0 0 0 4.381127,-8.545728 l 13.398148,-0.358635 a 51.850284,51.850284 0 0 0 1.5999,-10.194726 L 95.493545,69.641691 A 39.154983,39.154983 0 0 0 93.993379,60.834476 L 104.60513,52.681484 A 51.850284,51.850284 0 0 0 99.690189,43.2371 l -13.271542,3.396692 a 39.154983,39.154983 0 0 0 -5.758821,-5.595525 l 3.802867,-12.86588 a 51.850284,51.850284 0 0 0 -9.823172,-4.937684 l -8.741068,10.550261 a 39.154983,39.154983 0 0 0 -7.153569,-1.100191 z" />
+    <text
+       xml:space="preserve"
+       style="font-size:35.2778px;line-height:1.25;font-family:Arial;-inkscape-font-specification:Arial;letter-spacing:0px;word-spacing:0px;stroke-width:0.264583"
+       x="20.317059"
+       y="84.191803"
+       id="text1110"><tspan
+         sodipodi:role="line"
+         id="tspan1108"
+         x="20.317059"
+         y="84.191803"
+         style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:35.2778px;font-family:Arial;-inkscape-font-specification:'Arial Bold';stroke-width:0.264583">DFU</tspan></text>
+  </g>
+</svg>

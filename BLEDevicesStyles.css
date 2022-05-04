@@ -1,0 +1,41 @@
+body {
+    background-color: #383838;
+    font-family: Arial, Helvetica, sans-serif;
+    margin: 0px;
+}
+
+ul {
+    color: white;
+    list-style-type: none;
+    padding: 0px;
+    margin: 5px
+}
+
+li {
+
+    padding: 10px 10px 10px 30px;
+}
+
+li:hover {
+    background-color: #696567;
+    cursor: pointer;
+}
+.mytitlebar {
+    height: 29px;
+    margin: 0px;
+    padding: 0px;
+    width: calc(100%);
+    /*Compensate for body 1px border*/
+    background: #000000;
+    -webkit-app-region: drag;
+    color: rgb(255, 255, 255);
+    display: flex;
+    /* justify-content: center; */
+    align-items: center;
+    /* justify-content: center; */
+}
+
+.windowTitleStyle {
+    margin-left: 3px;
+    margin-right: 3px;
+}

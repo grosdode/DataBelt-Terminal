@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SmartBelt Terminal</title>
+    <link rel="manifest" href="manifest.webmanifest" />
+    <link rel="icon" href="images/icon/icon96.png" />
+    <meta name="viewport" content="width=1024" />
+    <meta name="Description" content="Author: Dominik G." />
+    <meta name="theme-color" content="#24272E" />
+    <link rel="apple-touch-icon" href="images/icon/icon192.png" />
+
+    <link rel="stylesheet" type="text/css" href="styles.css" />
+
+    <!-- Chart.js v2.9.2 https://www.chartjs.org (c) 2019 Chart.js Contributors Released under the MIT License -->
+    <script src="chartjs/Chart.min.js"></script>
+    <!-- Copyright (c) 2014 Project Nayuki http://www.nayuki.io/page/free-small-fft-in-multiple-languages (MIT License) -->
+    <script src="nayuki-obj/fft.min.js"></script>
+    <!-- Copyright (C) 2011-2017 by Jorik Tangelder (Eight Media) The MIT License (MIT) -->
+    <!-- <script src="https://cdn.jsdelivr.net/npm/hammerjs@2.0.8"></script> -->
+    <script src="chartjs/hammer.min.js"></script>
+    <!-- Copyright (c) 2013-2016 Nick Downie The MIT License (MIT)  -->
+    <!-- <script src="https://cdn.jsdelivr.net/npm/hammerjs@2.0.8"></script> -->
+    <script src="chartjs/chartjs-plugin-zoom.min.js"></script>
+  </head>
+  <body>
+    <div class="mytitlebar" id="drag-region">
+      <img class="windowTitleStyle" src="images/icon/icon512.png" alt="icon" width="23" height="23"/>
+      <p class="windowTitleStyle">SmartBelt Terminal</p></div>
+    <header>
+      <h1 id="headerH1">Your System doesn't support "Web Bluetooth" <br>or your PC doesn't 
+      have a active Bluetooth interface.<br>Try to use the Chrome browser and activate your Bluetooth.<br>
+      Old operating systems (Windows 7, ...) are not supported!<br>
+      To check web-bluetooth compatibility visit  <a href="https://github.com/WebBluetoothCG/web-bluetooth/blob/master/implementation-status.md" target="_blank" style="color:#ffffff;">WebBluetoothCG</a>.<br>
+      Also check the chrome flags and type chrome://flags in the address bar. You need to enable Experimental Web Platform Features.<br>
+      You can find minimal examples to test <a href="https://googlechrome.github.io/samples/web-bluetooth/get-devices.html" target="_blank" style="color:#ffffff;">here</a></h1>
+
+      <nav>
+        <ul class="settings-group">
+          <li class="clickable">
+            <div class="tooltip">
+              <img src="images/search.svg" alt="search for devices" id="img_connection"/>
+              <span class="tooltiptext tooltip-right" id="span_tooltip_connection">Start scanning for Sensors</span>
+            </div>
+          </li>
+          <li class="clickable">
+            <div class="tooltip">
+              <img src="images/Log_gray.svg" alt="start logging" id="img_log" />
+              <span class="tooltiptext tooltip-right">Start or stop data logging</span>
+            </div>          
+          </li>
+          <li class="clickable">
+            <div class="tooltip">
+            <img src="images/axisLimit.svg" alt="x axis limit" id="img_axis_limit" />
+            <span class="tooltiptext tooltip-right">Choose limit of the x axis</span>
+            <ul class="dropdown" id="AxisLimitDropdownContent_ul">
+              </ul>
+            </div>          
+          </li>
+        </ul>
+
+        <div class="hideable-settings-show" id="hideable-settings">
+          <ul class="settings-group-medium show-medium hide-small" id="settings-group-medium">
+            <li id="exit" class="exit-btn">
+              <img class="clickable" src="images/exit.svg" alt="exit menu" />
+            </li>
+            <li class="clickable">
+              <div class="tooltip">
+                <img src="images/HPV_gray.svg" alt="high pass filter" id="img_HPV" />
+                <span class="tooltiptext tooltip-left">Choose high-pass filter</span>          
+                <ul class="dropdown" id="HPVDropdownContent_ul" style="display: none;">
+                </ul>
+              </div>
+            </li>
+            <li class="clickable">
+              <div class="tooltip">
+                <img src="images/range_gray.svg" alt="sensor range" id="img_range" />
+                <span class="tooltiptext tooltip-left">Choose sensor range</span>
+                <ul class="dropdown" id="RangeDropdownContent_ul" style="display: none;">
+                </ul>
+              </div>
+            </li>
+            <li class="clickable">
+              <div class="tooltip">
+                <img src="images/axis_gray.svg" alt="choose axis" id="img_axis" />
+                <span class="tooltiptext tooltip-left">Choose sensor axis</span>
+                <ul class="dropdown" id="AxisDropdownContent_ul" style="display: none;">
+                </ul>
+              </div>
+            </li>
+            <li class="clickable">
+              <div class="tooltip">
+                <img src="images/Temp_gray.svg" alt="temperature capture frequency" id="img_temp" />
+                <span class="tooltiptext tooltip-left">Choose temperature sampling rate</span>
+                <ul class="dropdown" id="TempDropdownContent_ul" style="display: none;">
+                </ul>
+              </div> 
+            </li>
+          </ul>
+
+          <div class="settings-group-tick show-large hide-small" id="settings-group-large">
+            <ul class="tick-sensors">
+              <li>
+                <div class="tooltip">
+                  <input type="checkbox" id="inp_check_accelerometer" checked onclick="ValidateAccelerometerSelection()">
+                  <label class="checkbox-label" for="inp_check_accelerometer">Accelerometer</label>
+                  <span class="tooltiptext tooltip-left">Tick to receive Accelerometer data</span>
+                </div>
+              </li> 
+              <li>
+                <div class="tooltip">
+                  <input type="checkbox" id="inp_check_temperature" checked onclick="ValidateTemperatureSelection()">
+                  <label class="checkbox-label" for="inp_check_temperature">Temperature</label>
+                  <span class="tooltiptext tooltip-left">Tick to receive Temperature data</span>
+                </div>
+              </li>
+            </ul>
+          </div>
+
+          <div class="settings-group show-very-large hide-small" id="settings-group-very-large1">
+            <ul class="slide-sensors">
+              <li>
+                <div class="tooltip">
+                  <input type="range" min="400" max="3277" value="3277" class="slider" id="inp_sli_accelerometerDivider" oninput="accelerometerFreqSlide()">
+                  <label class="slider-label" id="inp_num_accelerometerDivider" for="inp_sli_accelerometerDivider">3277 Hz</label>
+                  <span class="tooltiptext tooltip-left">Slide to change accelerometer acquisition divider</span>
+                </div>
+              </li> 
+              <li>
+                <div class="tooltip">
+                  <input type="range" min="1" max="100" value="43" class="slider" id="inp_sli_temperatureDivider" oninput="temperatureFreqSlide()">
+                  <label class="slider-label" id="inp_num_temperatureDivider" for="inp_sli_temperatureDivider">0.5 Hz</label>
+                  <span class="tooltiptext tooltip-left">Slide to change temperature acquisition divider</span>
+                </div>
+              </li>
+            </ul>
+
+            <div class="clickable">
+              <div class="tooltip">
+                <img class="barActionImage" src="images/upload_gray.svg" alt="" id="img_upload_settings">
+                <span class="tooltiptext tooltip-left">Upload settings to sensor</span>
+              </div>        
+            </div>
+          </div>
+
+          <div class="settings-group show-very-large hide-small" id="settings-group-very-large2">
+            <div class="clickable">
+              <div class="tooltip">
+                <img class="barActionImage" src="images/dfu_gray.svg" alt="" id="img_dfu">
+                <span class="tooltiptext tooltip-left">Bring Sensor in DFU mode</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="tooltip">
+          <img src="images/logoSB_dis.svg" alt="connection state" id="img_BLEsymbol" />
+          <span class="tooltiptext tooltip-left">Connection status</span>
+        </div> 
+
+        <div class="clickable hide-very-large">
+          <div class="tooltip">
+            <img src="images/menu.svg" alt="menu" id="img_menu" class="menu" />
+            <span class="tooltiptext tooltip-left">Show more settings</span>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <ul class="chart">
+      <li><canvas id="accChart"></canvas></li>
+      <li>
+        <div class="grid-container">
+          <div class="grid-child-left">
+              <canvas id="tempChart"></canvas>
+          </div>
+          <div class="grid-child-right">
+            <div class="fundamental-tone">
+              <div class="container">
+                <div class="input"><p>Eingabe</p></div>
+                <div class="trumLength"><p>Trumlänge:</p></div>
+                <div class="beltWeight"><p>Riemengewicht:</p></div>
+                <div class="trumLengthValue">
+                  <input type="number" id="trumLengthValue" min="1" max="1000000" value="100">
+                </div>
+                <div class="beltWeightValue">
+                  <input type="number" id="beltWeightValue" step=0.001 min="0.001" max="10000" value="0.1">
+                </div>
+                <div class="trumLengthUnit"><p>mm</p></div>
+                <div class="beltWeightUnit"><p>kg/m</p></div>
+              </div>
+              <div class="container">
+                <div class="input"><p>Ausgabe</p></div>
+                <div class="trumLength"><p>Frequenz:</p></div>
+                <div class="beltWeight"><p>Trumkraft:</p></div>
+                <div class="trumLengthValue"><p id="toneFrequency">0</p></div>
+                <div class="beltWeightValue"><p id="trumForce">0</p></div>
+                <div class="trumLengthUnit"><p>Hz</p></div>
+                <div class="beltWeightUnit"><p>N</p></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </li>
+    </ul>
+    
+    <ul class="bottomBar">
+      <li>
+        <ul>
+          <li><p>Status: </p></li>
+          <li><p id="statusText">Disconnected</p></li>
+        </ul>
+      </li>
+      <li>
+        <ul>
+          <li><p>Setup: </p></li>
+          <li><p id="setupInfoText"></p></li>
+        </ul>
+      </li>
+      <li>
+        <ul>
+          <li><p>Magnet:</p></li>
+          <li><p id="MagText"></p></li>
+        </ul>
+      </li>
+      <!-- <li class="impressum">
+        <ul>
+          <li><a href="https://www.grosdode.de/impressum">Impressum</a></li>
+        </ul>
+      </li> -->
+    </ul>
+
+    <script>
+        let menu = document.getElementById('img_menu');
+        let settingsGroupMedium = document.getElementById('settings-group-medium');
+        let settingsGroupLarge = document.getElementById('settings-group-large');
+        let settingsGroupVeryLarge1 = document.getElementById('settings-group-very-large1');
+        let settingsGroupVeryLarge2 = document.getElementById('settings-group-very-large2');
+        let hideableSettings = document.getElementById('hideable-settings');
+        let exit = document.getElementById('exit');
+
+        menu.addEventListener('click', function(e) {
+            hideableSettings.classList.remove('hideable-settings-show');
+            hideableSettings.classList.add('hideable-settings-hide');
+            settingsGroupMedium.classList.toggle('hide-small');
+            settingsGroupLarge.classList.toggle('hide-small');
+            settingsGroupVeryLarge1.classList.toggle('hide-small');
+            settingsGroupVeryLarge2.classList.toggle('hide-small');
+            exit.style.display = 'inherit';
+            e.preventDefault();
+          });
+          
+          exit.addEventListener('click', function(e) {
+            hideableSettings.classList.add('hideable-settings-show');
+            hideableSettings.classList.remove('hideable-settings-hide');
+            settingsGroupMedium.classList.add('hide-small');
+            settingsGroupLarge.classList.add('hide-small');
+            settingsGroupVeryLarge1.classList.add('hide-small');
+            settingsGroupVeryLarge2.classList.add('hide-small');
+            exit.style.display = 'none';
+            e.preventDefault();
+        });
+    </script>
+
+    <script>
+      let vh = window.innerHeight * 0.01;
+      document.documentElement.style.setProperty('--vh', `${vh}px`);
+      window.addEventListener('resize', () => {
+        vh = window.innerHeight * 0.01;
+        document.documentElement.style.setProperty('--vh', `${vh}px`);
+      });
+    </script>
+
+    <script src="sketch.js"></script>
+
+    <script>
+      //Register service worker.
+      if ("serviceWorker" in navigator) {
+        window.addEventListener("load", () => {
+          navigator.serviceWorker.register("service-worker.js").then((reg) => {
+            // console.log('Service worker registered.', reg);
+            console.log("Service worker registered.");
+          });
+        });
+      }
+    </script>
+  </body>
+</html>
