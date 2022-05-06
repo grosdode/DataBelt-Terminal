@@ -245,78 +245,86 @@ function loggingCallback() {
   logging();
 }
 
+window.api.receive("documentCreated", (data) => {
+  if (data === 'fail') {
+    logging(true)
+  }
+  else
+  {
+    log_img.src = "images/Log_active.svg";
+    loggingActive = true;
+    deactivateSettings();
+
+    HP_Filter =
+      ADXL372accFilters[accelerometerFilterCharacteristic.value.getUint8(0)];
+    LP_Filter =
+      ADXL372accLpFilters[
+        accelerometerLpFilterCharacteristic.value.getUint8(0)
+      ];
+    Range = AccRanges[accelerometerRangeCharacteristic.value.getUint8(0)];
+    Axis = PossibleAxis[accelerometerAxisCharacteristic.value.getUint8(0)];
+    smapleFrequencyAcc =
+      SensorBaseFrequency /
+      GlobalFrequencyDivider /
+      accelerometerDividerCharacteristic.value.getUint8(0);
+
+    let headerACC =
+      `log file of Accelerometer;Sample Frequenzy:;` +
+      smapleFrequencyAcc +
+      `;Hz;HP Filter:;` +
+      HP_Filter +
+      `;Hz;LP Filter:;` +
+      LP_Filter +
+      `;Hz;Range:;` +
+      Range +
+      `;g;Axis:;` +
+      Axis +
+      `;Vaule Divider to get [g]:;` +
+      accVauleDivider;
+
+    let subHeaderAcc;
+    if (SoftwareVersion >= 3) {
+      if (accelerometerAxisCharacteristic.value.getUint8(0) >= 1) {
+        subHeaderAcc = Axis + `;Mag;Stamp`;
+      } else {
+        subHeaderAcc = `x;y;z;Mag;Stamp`;
+      }
+    } else {
+      if (accelerometerAxisCharacteristic.value.getUint8(0) >= 1) {
+        subHeaderAcc = Axis + `;Stamp`;
+      } else {
+        subHeaderAcc = `x;y;z;Stamp`;
+      }
+    }
+
+    window.api.send("writeToAccDocument", headerACC + "\n");
+    window.api.send("writeToAccDocument", subHeaderAcc + "\n");
+
+    let headerTemp =
+      `log file of Temperature Sonsor;Sample Frequenzy:;` +
+      SensorBaseFrequency +
+      `/` +
+      temperatureDividerCharacteristic.value.getUint16(0, true) *
+        GlobalFrequencyDivider +
+      `;Hz`;
+    let subHeaderTemp = `value;Stamp`;
+
+    window.api.send("writeToTempDocument", headerTemp + "\n");
+    window.api.send("writeToTempDocument", subHeaderTemp + "\n");
+  }
+  console.log(data);
+});
+
 function logging(abort = false) {
   if (loggingActive) {
     log_img.src = 'images/Log.svg';
 
-    let dateNow = new Date(Date.now());
-    let year = dateNow.getFullYear();
-    let month = dateNow.getMonth() + 1;
-    let day = dateNow.getDate();
-    let hour = dateNow.getUTCHours() + 1;
-    let minute = dateNow.getMinutes();
-
-    // ACC    
-    let csvBlobAcc = new Blob([[logdataAcc.join(`\n`)]], { type: "text/csv;charset=utf-8" });
-    const blobUrlAcc = URL.createObjectURL(csvBlobAcc);
-    const anchorElement = document.createElement("a");
-
-    anchorElement.href = blobUrlAcc;
-    anchorElement.download = `accData_` + year + `_` + month + `_` + day + `__` + hour + `_` + minute + `.csv`;
-
-    anchorElement.click();
-
-    /***************************************************************/
-    // temporarydate = new Date(Date.now());
-    // console.log(temporarydate.getMinutes() + ':' + temporarydate.getSeconds() + ',' + temporarydate.getMilliseconds());
-    // console.log('after click');
-    /***************************************************************/
-
-    // Temp
-    if (logdataTemp[0].length > logdataTempOverheadLength) {
-      let csvBlobTemp = new Blob([logdataTemp], { type: "text/plain;charset=utf-8" });
-      const blobUrlTemp = URL.createObjectURL(csvBlobTemp);
-      const anchorElementTemp = document.createElement("a");
-
-      anchorElementTemp.href = blobUrlTemp;
-      anchorElementTemp.download = `tempData_` + year + `_` + month + `_` + day + `__` + hour + `_` + minute + `.csv`;
-      anchorElementTemp.click();
-    }
-
     loggingActive = false;
     activateSettings();
     
-    logdataAcc = [];
-
   } else {
     if (!abort) {
-      log_img.src = 'images/Log_active.svg';
-      loggingActive = true;
-      deactivateSettings();
-
-      HP_Filter = ADXL372accFilters[accelerometerFilterCharacteristic.value.getUint8(0)];
-      LP_Filter = ADXL372accLpFilters[accelerometerLpFilterCharacteristic.value.getUint8(0)];
-      Range = AccRanges[accelerometerRangeCharacteristic.value.getUint8(0)];
-      Axis = PossibleAxis[accelerometerAxisCharacteristic.value.getUint8(0)];
-      smapleFrequencyAcc = SensorBaseFrequency / GlobalFrequencyDivider / accelerometerDividerCharacteristic.value.getUint8(0);
-
-      let header = `log file of Accelerometer;Sample Frequenzy:;` + smapleFrequencyAcc + `;Hz;HP Filter:;` + HP_Filter + `;Hz;LP Filter:;` + LP_Filter + `;Hz;Range:;` + Range + `;g;Axis:;` + Axis + `;Vaule Divider to get [g]:;` + accVauleDivider;
-      logdataAcc.push(header); //= `log file of Accelerometer;Sample Frequenzy:;` + smapleFrequencyAcc + `;Hz;HP Filter:;` + HP_Filter + `;Hz;LP Filter:;` + LP_Filter + `;Hz;Range:;` + Range + `;g;Axis:;` + Axis + `;Vaule Divider to get [g]:;` + accVauleDivider + `\n`;
-      let subHeader;
-      if(SoftwareVersion >= 3)
-      {
-        if (accelerometerAxisCharacteristic.value.getUint8(0) >= 1) { subHeader = Axis + `;Mag;Stamp`; }
-        else { subHeader =  `x;y;z;Mag;Stamp`; }
-      }
-      else
-      {
-        if (accelerometerAxisCharacteristic.value.getUint8(0) >= 1) { subHeader = Axis + `;Stamp`; }
-        else { subHeader =  `x;y;z;Stamp`; }
-      }
-      logdataAcc.push(subHeader); 
-      logdataTemp = [`log file of Temperature Sonsor;Sample Frequenzy:;` + SensorBaseFrequency + `/` + temperatureDividerCharacteristic.value.getUint16(0, true) * GlobalFrequencyDivider + `;Hz\n`];
-      logdataTemp[0] += `value;Stamp\n`;
-      logdataTempOverheadLength = logdataTemp[0].length;
+      window.api.send("createSensorDocuments", "createDocument");
     }
   }
 }
@@ -798,7 +806,8 @@ function handleaccelerometerDataCharacteristicChanged(event) {
     if (loggingActive) {
       try {
         logdataAccTemp += (event.target.value.getInt32(dataValueLength - 4));
-        logdataAcc.push(logdataAccTemp);
+        // logdataAcc.push(logdataAccTemp);
+        window.api.send("writeToAccDocument", logdataAccTemp+"\n");
       } catch (error) {
         console.warn('Argh! ' + error);
         statusText_p.innerHTML = error;
@@ -904,7 +913,8 @@ function handleaccelerometerDataCharacteristicChanged(event) {
     if (loggingActive) {
       try {
         logdataAccTemp += (event.target.value.getInt32(dataValueLength - 4));
-        logdataAcc.push(logdataAccTemp);
+        // logdataAcc.push(logdataAccTemp);
+        window.api.send("writeToAccDocument", logdataAccTemp + "\n");
       } catch (error) {
         console.warn('Argh! ' + error);
         statusText_p.innerHTML = error;
@@ -972,14 +982,20 @@ function handletemperatureDataCharacteristicChanged(event) {
 
     if (loggingActive) {
       if (i < (dataValueLength - 6)) {
-        logdataTemp[0] += (value + `;` + `\n`);
+        // logdataTemp[0] += (value + `;` + `\n`);
+        window.api.send("writeToTempDocument", value + `;` + `\n`);
       } else {
-        logdataTemp[0] += (value + `;`);
+        // logdataTemp[0] += (value + `;`);
+        window.api.send("writeToTempDocument", value + `;`);
       }
     }
   }
   if (loggingActive) {
-    logdataTemp[0] += (event.target.value.getInt32(dataValueLength - 4) + '\n');
+    // logdataTemp[0] += (event.target.value.getInt32(dataValueLength - 4) + '\n');
+    window.api.send(
+      "writeToTempDocument",
+      event.target.value.getInt32(dataValueLength - 4) + "\n"
+    );
   }
 
   tempChart.resetZoom();
