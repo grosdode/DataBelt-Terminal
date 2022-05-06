@@ -1,12 +1,25 @@
 // Modules to control application life and create native browser window
-const { app, BrowserWindow, ipcMain} = require("electron");
+const {
+  app,
+  BrowserWindow,
+  ipcMain,
+  dialog,
+  Notification
+} = require("electron");
 const path = require("path");
+const fs = require("fs");
 
 let mainWindow;
 let BLEDevicesWindow;
 let BLEDevicesList = [];
+let openedAccFilePath;
+let openedTempFilePath;
 
 let callbackForBluetoothEvent = null;
+
+function isInDevMode() {
+  return !app.isPackaged;
+}
 
 const createWindow = () => {
   // Create the browser window.
@@ -28,9 +41,9 @@ const createWindow = () => {
     autoHideMenuBar: true,
 
     icon: "images/icon/icon512.png",
-    // webPreferences: {
-    //   preload: path.join(__dirname, "preload.js"),
-    // },
+    webPreferences: {
+      preload: path.join(__dirname, "preload.js"),
+    },
   });
 
     mainWindow.webContents.on(
@@ -78,9 +91,9 @@ const createWindow = () => {
   mainWindow.loadFile("index.html");
 
   // Open the DevTools.
-  // mainWindow.webContents.openDevTools();
+  // if (isInDevMode) mainWindow.webContents.openDevTools();
 
-  //   mainWindow.maximize()
+  if (!isInDevMode) mainWindow.maximize();
 };
 
 // This method will be called when Electron has finished
@@ -154,3 +167,108 @@ ipcMain.on("getBLEDeviceList", (event, args) => {
     BLEDevicesWindow.webContents.send("BLEDeviceList", BLEDevicesList);
   }
 });
+
+ipcMain.on("createSensorDocuments", () => {
+  let dateNow = new Date(Date.now());
+  let year = dateNow.getFullYear();
+  let month = dateNow.getMonth() + 1;
+  let day = dateNow.getDate();
+  let hour = dateNow.getUTCHours() - dateNow.getTimezoneOffset() / 60;
+  let minute = dateNow.getMinutes();
+  let date =
+    year +
+    padZeros(month, 2) +
+    padZeros(day, 2) +
+    `_` +
+    padZeros(hour, 2) +
+    padZeros(minute, 2);
+
+  dialog
+    .showSaveDialog(mainWindow, {
+      title: "Choose file for sensor data",
+      defaultPath: `SensorData_${date}`,
+      filters: [
+        { name: "Sensor data file csv", extensions: ["csv"] },
+        { name: "Sensor data file txt", extensions: ["txt"] },
+      ],
+    })
+    .then(({ filePath }) => {
+      if (filePath != "") {
+        let accFilePath =
+          path.dirname(filePath) + "\\acc_" + path.basename(filePath);
+        let tempFilePath =
+          path.dirname(filePath) + "\\temp_" + path.basename(filePath);
+
+        console.log(accFilePath);
+        console.log(tempFilePath);
+        fs.writeFile(accFilePath, "", (error) => {
+          if (error) {
+            handleError(
+              "Error while try create file: " +
+                path.basename(accFilePath) +
+                "\n" +
+                error
+            );
+            console.log("error", error);
+          } else {
+            openedAccFilePath = accFilePath;
+            fs.writeFile(tempFilePath, "", (error) => {
+              if (error) {
+                handleError(
+                  "Error while try create file: " +
+                    path.basename(tempFilePath) +
+                    "\n" +
+                    error
+                );
+                console.log("error", error);
+              } else {
+                openedTempFilePath = tempFilePath;
+                mainWindow.webContents.send("documentCreated", 'documents created');
+              }
+            });
+          }
+        });          
+      } else {
+        mainWindow.webContents.send("documentCreated", "fail");
+      }
+    });
+});
+
+ipcMain.on("writeToAccDocument", (event, args) => {
+  // console.log(args);
+  if (openedAccFilePath) {
+    fs.appendFile(openedAccFilePath, args, (error) => {
+      if (error) {
+        handleError("Error while try to write to document:\n" + error);
+        console.log("error", error);
+      }
+    });
+  } else {
+    handleError("Accelerometer file path is not set");
+  }
+});
+
+ipcMain.on("writeToTempDocument", (event, args) => {
+  // console.log(args);
+  if (openedTempFilePath) {
+    fs.appendFile(openedTempFilePath, args, (error) => {
+      if (error) {
+        handleError("Error while try to write to document:\n" + error);
+        console.log("error", error);
+      }
+    });
+  } else {
+    handleError("Temperature data file path is not set");
+  }
+});
+
+const handleError = (message) => {
+  new Notification({
+    title: "Error",
+    body: message,
+  }).show();
+};
+
+function padZeros(nummer, digits) {
+  return ([1e12] + nummer).slice(-digits);
+}
