@@ -3,8 +3,8 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>SmartBelt Terminal</title>
-    <link rel="manifest" href="manifest.webmanifest" />
+    <title>DataBelt Terminal</title>
+    <!-- <link rel="manifest" href="manifest.webmanifest" /> -->
     <link rel="icon" href="images/icon/icon96.png" />
     <meta name="viewport" content="width=1024" />
     <meta name="Description" content="Author: Dominik G." />
@@ -27,7 +27,7 @@
   <body>
     <div class="mytitlebar" id="drag-region">
       <img class="windowTitleStyle" src="images/icon/icon512.png" alt="icon" width="23" height="23"/>
-      <p class="windowTitleStyle">SmartBelt Terminal</p></div>
+      <p class="windowTitleStyle">DataBelt Terminal</p></div>
     <header>
       <h1 id="headerH1">Your System doesn't support "Web Bluetooth" <br>or your PC doesn't 
       have a active Bluetooth interface.<br>Try to use the Chrome browser and activate your Bluetooth.<br>
@@ -224,11 +224,6 @@
           <li><p id="MagText"></p></li>
         </ul>
       </li>
-      <!-- <li class="impressum">
-        <ul>
-          <li><a href="https://www.grosdode.de/impressum">Impressum</a></li>
-        </ul>
-      </li> -->
     </ul>
 
     <script>
@@ -273,17 +268,5 @@
     </script>
 
     <script src="sketch.js"></script>
-
-    <script>
-      //Register service worker.
-      if ("serviceWorker" in navigator) {
-        window.addEventListener("load", () => {
-          navigator.serviceWorker.register("service-worker.js").then((reg) => {
-            // console.log('Service worker registered.', reg);
-            console.log("Service worker registered.");
-          });
-        });
-      }
-    </script>
   </body>
 </html>
