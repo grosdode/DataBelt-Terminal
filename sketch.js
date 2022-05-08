@@ -1913,3 +1913,47 @@ function initTempChart() {
 window.onload = function() {
   setup();
 }
+
+
+
+// Menu
+let menu = document.getElementById("img_menu");
+let settingsGroupMedium = document.getElementById("settings-group-medium");
+let settingsGroupLarge = document.getElementById("settings-group-large");
+let settingsGroupVeryLarge1 = document.getElementById(
+  "settings-group-very-large1"
+);
+let settingsGroupVeryLarge2 = document.getElementById(
+  "settings-group-very-large2"
+);
+let hideableSettings = document.getElementById("hideable-settings");
+let exit = document.getElementById("exit");
+
+menu.addEventListener("click", function (e) {
+  hideableSettings.classList.remove("hideable-settings-show");
+  hideableSettings.classList.add("hideable-settings-hide");
+  settingsGroupMedium.classList.toggle("hide-small");
+  settingsGroupLarge.classList.toggle("hide-small");
+  settingsGroupVeryLarge1.classList.toggle("hide-small");
+  settingsGroupVeryLarge2.classList.toggle("hide-small");
+  exit.style.display = "inherit";
+  e.preventDefault();
+});
+
+exit.addEventListener("click", function (e) {
+  hideableSettings.classList.add("hideable-settings-show");
+  hideableSettings.classList.remove("hideable-settings-hide");
+  settingsGroupMedium.classList.add("hide-small");
+  settingsGroupLarge.classList.add("hide-small");
+  settingsGroupVeryLarge1.classList.add("hide-small");
+  settingsGroupVeryLarge2.classList.add("hide-small");
+  exit.style.display = "none";
+  e.preventDefault();
+});
+
+let vh = window.innerHeight * 0.01;
+document.documentElement.style.setProperty("--vh", `${vh}px`);
+window.addEventListener("resize", () => {
+  vh = window.innerHeight * 0.01;
+  document.documentElement.style.setProperty("--vh", `${vh}px`);
+});
