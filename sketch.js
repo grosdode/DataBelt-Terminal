@@ -43,16 +43,19 @@ const UUIDs = {
   }
 };
 
-const ADXL372accFilters = [0, 3.96, 7.88, 15.58, 30.48];
-const ADXL372accLpFilters = [200, 400, 800, 1600, 3200];
-const AccRanges = [100, 200, 400];
-const ADXL372Range = [' ', 200, ' '];
-const PossibleAxis = ["All Axis", "X Axis", "Y Axis", "Z Axis"];
-const PossibleAxisLimits = [50, 100, 200, 300, 500, 750, 1000, 1600];
-const SensorBaseFrequency = 32768;
-const UsedAccelerometer = ["ADXL_372"];
+const DDContent = {
+  ADXL372accFilters: [0, 3.96, 7.88, 15.58, 30.48],
+  ADXL372accLpFilters: [200, 400, 800, 1600, 3200],
+  AccRanges: [100, 200, 400],
+  ADXL372Range: [' ', 200, ' '],
+  PossibleAxis: ["All Axis", "X Axis", "Y Axis", "Z Axis"],
+  PossibleAxisLimits: [50, 100, 200, 300, 500, 750, 1000, 1600],
+  TempSampling: ["0.25", "0.5", "1", "2"],
+}
 
-const TempSampling = ["0.25", "0.5", "1", "2"];
+const UsedAccelerometer = ["ADXL_372"];
+const SensorBaseFrequency = 32768;
+
 const TEMP_TIME_WINDOW = 2;
 
 const TemperatureFreqSlideMin = 0.01;
@@ -60,6 +63,7 @@ const TemperatureFreqSlideMax = 100;
 
 let IsConnected = false;
 let BluetoothDevice;
+let ShouldDisconnect = false;
 
 let Characteristics = {
   acc: {
@@ -227,13 +231,13 @@ function setup() {
       DomEl.img.connectionButton.addEventListener('click', () => handleConnection());
       initAccChart();
       initTempChart();
-      setupHPVDropdownContent(ADXL372accFilters);
-      setupRangeDropdownContent(ADXL372Range);
-      setupAxisDropdownContent(PossibleAxis);
-      setupAxisLimitDropdownContent(PossibleAxisLimits);
+      setupHPVDropdownContent(DDContent.ADXL372accFilters);
+      setupRangeDropdownContent(DDContent.ADXL372Range);
+      setupAxisDropdownContent(DDContent.PossibleAxis);
+      setupAxisLimitDropdownContent(DDContent.PossibleAxisLimits);
       DomEl.dropDown.axisLimit.style.display = "none";
       document.getElementById("img_axis_limit").addEventListener('click', showAxisLimitDropdownContent);
-      setupTempDropdownContent(TempSampling);
+      setupTempDropdownContent(DDContent.TempSampling);
       DomEl.dropDown.HPV.addEventListener('click', (param) => updateChar8Bit(Characteristics.acc.filter, param.target.id.replace(/\D/g, '')));
       DomEl.dropDown.range.addEventListener('click', (param) => updateChar8Bit(Characteristics.acc.range, param.target.id.replace(/\D/g, '')));
       DomEl.dropDown.axis.addEventListener('click', (param) => updateChar8Bit(Characteristics.acc.axis, param.target.id.replace(/\D/g, '')));
@@ -266,8 +270,8 @@ const requestWakeLock = async () => {
 
 function setXAxisLimit(dropdownID) {
   AccChart.resetZoom();
-  AccChart.options.scales.xAxes[0].ticks.max = PossibleAxisLimits[dropdownID];
-  AccChart.options.scales.xAxes[0].ticks.stepSize = PossibleAxisLimits[dropdownID] / 20;
+  AccChart.options.scales.xAxes[0].ticks.max = DDContent.PossibleAxisLimits[dropdownID];
+  AccChart.options.scales.xAxes[0].ticks.stepSize = DDContent.PossibleAxisLimits[dropdownID] / 20;
   AccChart.update();
   localStorage.setItem('xLimit', dropdownID);
 }
@@ -288,13 +292,13 @@ window.api.receive("documentCreated", (data) => {
     deactivateSettings();
 
     HP_Filter =
-      ADXL372accFilters[Characteristics.acc.filter.value.getUint8(0)];
+      DDContent.ADXL372accFilters[Characteristics.acc.filter.value.getUint8(0)];
     LP_Filter =
-      ADXL372accLpFilters[
+      DDContent.ADXL372accLpFilters[
         Characteristics.acc.lpFilter.value.getUint8(0)
       ];
-    Range = AccRanges[Characteristics.acc.range.value.getUint8(0)];
-    Axis = PossibleAxis[Characteristics.acc.axis.value.getUint8(0)];
+    Range = DDContent.AccRanges[Characteristics.acc.range.value.getUint8(0)];
+    Axis = DDContent.PossibleAxis[Characteristics.acc.axis.value.getUint8(0)];
     SmapleFrequencyAcc =
       SensorBaseFrequency /
       GlobalFrequencyDivider /
@@ -377,7 +381,7 @@ function updateChar16Bit(characteristicHandle, newvalue) {
 }
 
 function updateTemperatureChar(newvalueIndex) {
-  let newFrequency = parseFloat(TempSampling[parseInt(newvalueIndex)]);
+  let newFrequency = parseFloat(DDContent.TempSampling[parseInt(newvalueIndex)]);
   let newDivider = SensorBaseFrequency / (GlobalFrequencyDivider * newFrequency);
   newDivider = Math.round(newDivider);
   updateChar16Bit(Characteristics.temp.divider, newDivider);
@@ -581,8 +585,13 @@ function switchToDFUMode() {
   Characteristics.dfu.dfu.writeValue(DfuCommand);
 }
 
+function connectingToBLEDevice(device) {
+  
+}
+
 function onButtonClick() {
   BluetoothDevice = null;
+  ShouldDisconnect = false;
 
   let options = {
     filters: [
@@ -632,10 +641,10 @@ function onButtonClick() {
                 setTimeout(() => {
                   Characteristics.acc.filter.readValue()
                     .catch(error => {
-                      console.warn('Argh! ' + error);
+                      console.warn('Fail: ' + error);
                       console.warn(`Fail while characteristics.acc.filter.readValue()`);
                       DomEl.p.statusText.innerHTML = `Connection failed`;
-                      BluetoothDevice.gatt.disconnect();
+                      disconnetDiviceClean();
                       return;
                     });
                 }, 200);
@@ -664,10 +673,10 @@ function onButtonClick() {
                 if (document.getElementById("inp_check_accelerometer").checked) {
                   Characteristics.acc.data.startNotifications()
                     .catch(error => {
-                      console.warn('Argh! ' + error);
+                      console.warn('Fail: ' + error);
                       console.warn(`Fail while accelerometerDataCharacteristic.startNotifications()`);
                       DomEl.p.statusText.innerHTML = `Connection failed`;
-                      BluetoothDevice.gatt.disconnect();
+                      disconnetDiviceClean();
                       return;
                     });
                 }
@@ -762,7 +771,7 @@ function onButtonClick() {
                 );
                 // dfuCharacteristic.startNotifications()
                 //   .catch(error => {
-                //     console.warn('Argh! ' + error);
+                //     console.warn('Fail: ' + error);
                 //     console.warn(`Fail while dfuCharacteristic.startNotifications()`);
                 //     statusText_p.innerHTML = `Connection failed`;
                 //     bluetoothDevice.gatt.disconnect();
@@ -779,7 +788,7 @@ function onButtonClick() {
       return queue;
     })
     .catch(error => {
-      console.warn('Argh! ' + error);
+      console.warn('Fail: ' + error);
       DomEl.p.statusText.innerHTML = error;
       draw();
     });
@@ -795,16 +804,21 @@ function getSupportedProperties(characteristic) {
   return '[' + supportedProperties.join(', ') + ']';
 }
 
+function disconnetDiviceClean() {
+  if (BluetoothDevice.gatt.connected) {
+    ShouldDisconnect = true;
+    BluetoothDevice.gatt.disconnect();
+  } else {
+    console.log("Bluetooth Device is already disconnected");
+  }
+}
+
 function onDisconnectButtonClick() {
   if (!BluetoothDevice) {
     return;
   }
   console.log('Disconnecting from Bluetooth Device...');
-  if (BluetoothDevice.gatt.connected) {
-    BluetoothDevice.gatt.disconnect();
-  } else {
-    console.log('Bluetooth Device is already disconnected');
-  }
+  disconnetDiviceClean();
 }
 
 function onDisconnected(event) {
@@ -813,6 +827,8 @@ function onDisconnected(event) {
   IsConnected = false;
   logging(true);
   draw();
+  // if (!ShouldDisconnect) 
+  //   reconnect();
 }
 
 function convert12to16int(value)
@@ -834,7 +850,7 @@ function handleaccelerometerDataCharacteristicChanged(event) {
       AccChart.data.datasets.splice(1, 2);
     }
 
-    if (AccChart.data.datasets[0].label !== PossibleAxis[event.target.value.getUint8(0)]) { AccChart.data.datasets[0].label = PossibleAxis[event.target.value.getUint8(0)]; }
+    if (AccChart.data.datasets[0].label !== DDContent.PossibleAxis[event.target.value.getUint8(0)]) { AccChart.data.datasets[0].label = DDContent.PossibleAxis[event.target.value.getUint8(0)]; }
 
     let logdataAccTemp = '';
     for (let i = 1; i < dataValueLength - 4; i += 2) {
@@ -854,7 +870,7 @@ function handleaccelerometerDataCharacteristicChanged(event) {
             logdataAccTemp += (value + `;` + magValue + `;`);
           }
         } catch (error) {
-          console.warn('Argh! ' + error);
+          console.warn('Fail: ' + error);
           DomEl.p.statusText.innerHTML = error;
         }
       }
@@ -868,7 +884,7 @@ function handleaccelerometerDataCharacteristicChanged(event) {
         logdataAccTemp += (event.target.value.getInt32(dataValueLength - 4));
         window.api.send("writeToAccDocument", logdataAccTemp+"\n");
       } catch (error) {
-        console.warn('Argh! ' + error);
+        console.warn('Fail: ' + error);
         DomEl.p.statusText.innerHTML = error;
       }
     }
@@ -947,7 +963,7 @@ function handleaccelerometerDataCharacteristicChanged(event) {
             logdataAccTemp += (valueX + `;` + valueY + `;` + valueZ + `;`);
           }
         } catch (error) {
-          console.warn('Argh! ' + error);
+          console.warn('Fail: ' + error);
           DomEl.p.statusText.innerHTML = error;
         }
       }
@@ -961,7 +977,7 @@ function handleaccelerometerDataCharacteristicChanged(event) {
         logdataAccTemp += (event.target.value.getInt32(dataValueLength - 4));
         window.api.send("writeToAccDocument", logdataAccTemp + "\n");
       } catch (error) {
-        console.warn('Argh! ' + error);
+        console.warn('Fail: ' + error);
         DomEl.p.statusText.innerHTML = error;
       }
     }
@@ -1053,15 +1069,15 @@ function handletemperatureDataCharacteristicChanged(event) {
 
 function handleAccelerometerFilterCharacteristicChanged(event) {
   handleSetupCharacteristicChanged();
-  console.log('Accelerometer high pass filter = ' + ADXL372accFilters[Characteristics.acc.filter.value.getUint8(0)] + ' Hz');
+  console.log('Accelerometer high pass filter = ' + DDContent.ADXL372accFilters[Characteristics.acc.filter.value.getUint8(0)] + ' Hz');
   if (InitialCharacteristicRead){
     // accelerometerLpFilterCharacteristic.readValue()
     Characteristics.acc.lpFilter.readValue()
       .catch(error => {
-        console.warn('Argh! ' + error);
+        console.warn('Fail: ' + error);
         console.warn(`Fail while Characteristics.acc.lpFilter.readValue()`);
         DomEl.p.statusText.innerHTML = `Connection failed`;
-        BluetoothDevice.gatt.disconnect();
+        disconnetDiviceClean();
         return;
       });
   }
@@ -1069,14 +1085,14 @@ function handleAccelerometerFilterCharacteristicChanged(event) {
 
 function handleAccelerometerLpFilterCharacteristicChanged(event) {
   handleSetupCharacteristicChanged();
-  console.log('Accelerometer low pass filter = ' + ADXL372accLpFilters[Characteristics.acc.lpFilter.value.getUint8(0)] + ' Hz');
+  console.log('Accelerometer low pass filter = ' + DDContent.ADXL372accLpFilters[Characteristics.acc.lpFilter.value.getUint8(0)] + ' Hz');
   if (InitialCharacteristicRead) {
     Characteristics.acc.range.readValue()
       .catch(error => {
-        console.warn('Argh! ' + error);
+        console.warn('Fail: ' + error);
         console.warn(`Fail while Characteristics.acc.range.readValue()`);
         DomEl.p.statusText.innerHTML = `Connection failed`;
-        BluetoothDevice.gatt.disconnect();
+        disconnetDiviceClean();
         return;
       });
   }
@@ -1084,14 +1100,14 @@ function handleAccelerometerLpFilterCharacteristicChanged(event) {
 
 function handleaccelerometerRangeCharacteristicChanged(event) {
   handleSetupCharacteristicChanged();
-  console.log('Accelerometer range = ' + ADXL372Range[Characteristics.acc.range.value.getUint8(0)]);
+  console.log('Accelerometer range = ' + DDContent.ADXL372Range[Characteristics.acc.range.value.getUint8(0)]);
   if (InitialCharacteristicRead) {
     Characteristics.acc.divider.readValue()
       .catch(error => {
-        console.warn('Argh! ' + error);
+        console.warn('Fail: ' + error);
         console.warn(`Fail while accelerometerDividerCharacteristic.readValue()`);
         DomEl.p.statusText.innerHTML = `Connection failed`;
-        BluetoothDevice.gatt.disconnect();
+        disconnetDiviceClean();
         return;
       });
   }
@@ -1102,10 +1118,10 @@ function handleaccelerometerDividerCharacteristicChanged(event) {
   if (InitialCharacteristicRead) {
     Characteristics.acc.axis.readValue()
       .catch(error => {
-        console.warn('Argh! ' + error);
+        console.warn('Fail: ' + error);
         console.warn(`Fail while accelerometerAxisCharacteristic.readValue()`);
         DomEl.p.statusText.innerHTML = `Connection failed`;
-        BluetoothDevice.gatt.disconnect();
+        disconnetDiviceClean();
         return;
       });
   }
@@ -1114,10 +1130,10 @@ function handleaccelerometerDividerCharacteristicChanged(event) {
       Characteristics.acc.lpFilter.value !== null) {
       Characteristics.acc.lpFilter.readValue()
         .catch(error => {
-          console.warn('Argh! ' + error);
+          console.warn('Fail: ' + error);
           console.warn(`Fail while Characteristics.acc.lpFilter.readValue()`);
           DomEl.p.statusText.innerHTML = `Connection failed`;
-          BluetoothDevice.gatt.disconnect();
+          disconnetDiviceClean();
           return;
         });
     }
@@ -1126,14 +1142,14 @@ function handleaccelerometerDividerCharacteristicChanged(event) {
 
 function handleaccelerometerAxisCharacteristicChanged(event) {
   handleSetupCharacteristicChanged();
-  console.log('Accelerometer transmitting Axis = ' + PossibleAxis[Characteristics.acc.axis.value.getUint8(0)]);
+  console.log('Accelerometer transmitting Axis = ' + DDContent.PossibleAxis[Characteristics.acc.axis.value.getUint8(0)]);
   if (InitialCharacteristicRead) {
     Characteristics.acc.type.readValue()
       .catch(error => {
-        console.warn('Argh! ' + error);
+        console.warn('Fail: ' + error);
         console.warn(`Fail while accelerometerTypeCharacteristic.readValue()`);
         DomEl.p.statusText.innerHTML = `Connection failed`;
-        BluetoothDevice.gatt.disconnect();
+        disconnetDiviceClean();
         return;
       });
   }
@@ -1144,10 +1160,10 @@ function handleaccelerometerTypeCharacteristicChanged(event) {
   if (InitialCharacteristicRead) {
     Characteristics.acc.resolution.readValue()
       .catch(error => {
-        console.warn('Argh! ' + error);
+        console.warn('Fail: ' + error);
         console.warn(`Fail while accelerometerResolutionCharacteristic.readValue()`);
         DomEl.p.statusText.innerHTML = `Connection failed`;
-        BluetoothDevice.gatt.disconnect();
+        disconnetDiviceClean();
         return;
       });
   }
@@ -1159,10 +1175,10 @@ function handleaccelerometerResolutionCharacteristicChanged(event) {
   if (InitialCharacteristicRead) {
     Characteristics.acc.bin.readValue()
       .catch(error => {
-        console.warn('Argh! ' + error);
+        console.warn('Fail: ' + error);
         console.warn(`Fail while accelerometerBinCharacteristic.readValue()`);
         DomEl.p.statusText.innerHTML = `Connection failed`;
-        BluetoothDevice.gatt.disconnect();
+        disconnetDiviceClean();
         return;
       });
   }
@@ -1173,10 +1189,10 @@ function handleaccelerometerBinCharacteristicChanged(event) {
   if (InitialCharacteristicRead) {
     Characteristics.temp.divider.readValue()
       .catch(error => {
-        console.warn('Argh! ' + error);
+        console.warn('Fail: ' + error);
         console.warn(`Fail while temperatureDividerCharacteristic.readValue()`);
         DomEl.p.statusText.innerHTML = `Connection failed`;
-        BluetoothDevice.gatt.disconnect();
+        disconnetDiviceClean();
         return;
       });
   }
@@ -1187,10 +1203,10 @@ function handletemperatureDividerCharacteristicChanged(event) {
   if (InitialCharacteristicRead) {
     Characteristics.voltage.divider.readValue()
       .catch(error => {
-        console.warn('Argh! ' + error);
+        console.warn('Fail: ' + error);
         console.warn(`Fail while voltageDividerCharacteristic.readValue()`);
         DomEl.p.statusText.innerHTML = `Connection failed`;
-        BluetoothDevice.gatt.disconnect();
+        disconnetDiviceClean();
         return;
       });
   }
@@ -1201,10 +1217,10 @@ function handlevoltageDividerCharacteristicChanged(event) {
   if (InitialCharacteristicRead) {
     Characteristics.info.hardwareVersion.readValue()
       .catch(error => {
-        console.warn('Argh! ' + error);
+        console.warn('Fail: ' + error);
         console.warn(`Fail while infoHardwareVersionCharacteristic.readValue()`);
         DomEl.p.statusText.innerHTML = `Connection failed`;
-        BluetoothDevice.gatt.disconnect();
+        disconnetDiviceClean();
         return;
       });
   }
@@ -1220,10 +1236,10 @@ function handleinfoHardwareVersionCharacteristicChanged(event) {
   if (InitialCharacteristicRead) {
     Characteristics.info.softwareVersion.readValue()
       .catch(error => {
-        console.warn('Argh! ' + error);
+        console.warn('Fail: ' + error);
         console.warn(`Fail while infoSoftwareVersionCharacteristic.readValue()`);
         statusTexwarnt_p.innerHTML = `Connection failed`;
-        BluetoothDevice.gatt.disconnect();
+        disconnetDiviceClean();
         return;
       });
   }
@@ -1235,10 +1251,10 @@ function handleinfoSoftwareVersionCharacteristicChanged(event) {
   if (InitialCharacteristicRead) {
     Characteristics.info.globalDivider.readValue()
       .catch(error => {
-        console.warn('Argh! ' + error);
+        console.warn('Fail: ' + error);
         console.warn(`Fail while infoGlobalDividerCharacteristic.readValue()`);
         DomEl.p.statusText.innerHTML = `Connection failed`;
-        BluetoothDevice.gatt.disconnect();
+        disconnetDiviceClean();
         return;
       });
   }
@@ -1251,20 +1267,20 @@ function handleinfoGlobalDividerCharacteristicChanged(event) {
     if (document.getElementById("inp_check_temperature").checked) {
       Characteristics.temp.data.startNotifications()
         .catch(error => {
-          console.warn('Argh! ' + error);
+          console.warn('Fail: ' + error);
           console.warn(`Fail while temperatureDataCharacteristic.startNotifications()`);
           DomEl.p.statusText.innerHTML = `Connection failed`;
-          BluetoothDevice.gatt.disconnect();
+          disconnetDiviceClean();
           return;
         });
     }
     setTimeout(() => {
       Characteristics.dfu.dfu.startNotifications()
         .catch(error => {
-          console.warn('Argh! ' + error);
+          console.warn('Fail: ' + error);
           console.warn(`Fail while dfuCharacteristic.startNotifications()`);
           DomEl.p.statusText.innerHTML = `Connection failed`;
-          BluetoothDevice.gatt.disconnect();
+          disconnetDiviceClean();
           return;
         });
     }, 1000);
@@ -1273,7 +1289,7 @@ function handleinfoGlobalDividerCharacteristicChanged(event) {
     //   if (document.getElementById("inp_check_voltage").checked) {
     //     voltageDataCharacteristic.startNotifications()
     //       .catch(error => {
-    //         console.warn('Argh! ' + error);
+    //         console.warn('Fail: ' + error);
     //         console.warn(`Fail while voltageDataCharacteristic.startNotifications()`);
     //         statusText_p.innerHTML = `Connection failed`;
     //         bluetoothDevice.gatt.disconnect();
@@ -1352,7 +1368,7 @@ function handleSetupCharacteristicChanged() {
         Math.pow(
           2,
           Characteristics.acc.resolution.value.getUint8(0) - 1
-        ) / AccRanges[Characteristics.acc.range.value.getUint8(0)];
+        ) / DDContent.AccRanges[Characteristics.acc.range.value.getUint8(0)];
 
       SmapleFrequencyTemp =
         SensorBaseFrequency /
@@ -1427,21 +1443,21 @@ function handleSetupCharacteristicChanged() {
 
       valueString +=
         "HP Filter: " +
-        ADXL372accFilters[Characteristics.acc.filter.value.getUint8(0)] +
+        DDContent.ADXL372accFilters[Characteristics.acc.filter.value.getUint8(0)] +
         "Hz,";
       valueString +=
         "LP Filter: " +
-        ADXL372accLpFilters[
+        DDContent.ADXL372accLpFilters[
           Characteristics.acc.lpFilter.value.getUint8(0)
         ] +
         "Hz,";
       valueString +=
         " Range: +-" +
-        AccRanges[Characteristics.acc.range.value.getUint8(0)] +
+        DDContent.AccRanges[Characteristics.acc.range.value.getUint8(0)] +
         "g,";
       valueString +=
         " Axis: " +
-        PossibleAxis[Characteristics.acc.axis.value.getUint8(0)];
+        DDContent.PossibleAxis[Characteristics.acc.axis.value.getUint8(0)];
       valueString +=
         " Temperature: " + Number(SmapleFrequencyTemp).toFixed(2) + `Hz`;
 
@@ -1594,12 +1610,12 @@ function ValidateVoltageSelection() {
 }
 
 function initAccChart() {
-  let xAxesTicksMax = PossibleAxisLimits[2];
-  let xAxesTicksStepSize = PossibleAxisLimits[2] / 20;
+  let xAxesTicksMax = DDContent.PossibleAxisLimits[2];
+  let xAxesTicksStepSize = DDContent.PossibleAxisLimits[2] / 20;
   let xLimitStored = localStorage.getItem('xLimit')
   if (null !== xLimitStored) {
-    xAxesTicksMax = PossibleAxisLimits[xLimitStored];
-    xAxesTicksStepSize = PossibleAxisLimits[xLimitStored] / 20;
+    xAxesTicksMax = DDContent.PossibleAxisLimits[xLimitStored];
+    xAxesTicksStepSize = DDContent.PossibleAxisLimits[xLimitStored] / 20;
   }
 
   AccChart = new Chart(document.getElementById('accChart').getContext('2d'), {
