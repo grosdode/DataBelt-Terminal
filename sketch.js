@@ -50,16 +50,16 @@ const ADXL372Range = [' ', 200, ' '];
 const PossibleAxis = ["All Axis", "X Axis", "Y Axis", "Z Axis"];
 const PossibleAxisLimits = [50, 100, 200, 300, 500, 750, 1000, 1600];
 const SensorBaseFrequency = 32768;
-const usedAccelerometer = ["ADXL_372"];
+const UsedAccelerometer = ["ADXL_372"];
 
 const TempSampling = ["0.25", "0.5", "1", "2"];
 const TEMP_TIME_WINDOW = 2;
 
-const temperatureFreqSlideMin = 0.01;
-const temperatureFreqSlideMax = 100;
+const TemperatureFreqSlideMin = 0.01;
+const TemperatureFreqSlideMax = 100;
 
-let isConnected = false;
-let bluetoothDevice;
+let IsConnected = false;
+let BluetoothDevice;
 
 let Characteristics = {
   acc: {
@@ -96,83 +96,92 @@ let SoftwareVersion = -1;
 
 let GlobalFrequencyDivider = 20;
 
-let accVauleDivider = (2 ^ 11) / 200;
+let AccVauleDivider = (2 ^ 11) / 200;
 
-let loggingActive = false;
+let LoggingActive = false;
 
-let peakFreq = 0;
+let PeakFreq = 0;
 
-const fftLength = 4096;
-const accUpdateDivider = 10;
-let accUpdateDividerValue = 0;
-let accData = Array.apply(null, { length: fftLength }).map(Number.call, _ => 0);
-let accDataX = Array.apply(null, { length: fftLength }).map(Number.call, _ => 0);
-let accDataY = Array.apply(null, { length: fftLength }).map(Number.call, _ => 0);
-let accDataZ = Array.apply(null, { length: fftLength }).map(Number.call, _ => 0);
-let accDataPointer = 0;
-let tempTime = 0;
+const FftLength = 4096;
+const AccUpdateDivider = 10;
+let AccUpdateDividerValue = 0;
+let AccData = Array.apply(null, { length: FftLength }).map(Number.call, _ => 0);
+let AccDataX = Array.apply(null, { length: FftLength }).map(Number.call, _ => 0);
+let AccDataY = Array.apply(null, { length: FftLength }).map(Number.call, _ => 0);
+let AccDataZ = Array.apply(null, { length: FftLength }).map(Number.call, _ => 0);
+let AccDataPointer = 0;
+let TempTime = 0;
 const TEMPERATURE_DIVIDER = 4;
-let smapleFrequencyTemp = 5;
-let temperature_time_divider = 60 / smapleFrequencyTemp;
+let SmapleFrequencyTemp = 5;
+let Temperature_time_divider = 60 / SmapleFrequencyTemp;
 
-let tempYMin = 1000;
-let tempYMax = -1000;
-const tempAxisAhead = 3;
+let TempYMin = 1000;
+let TempYMax = -1000;
+const TempAxisAhead = 3;
 
-const connectionButton_img = document.getElementById("img_connection");
-const HPVSettings_img = document.getElementById("img_HPV");
-const rangeSettings_img = document.getElementById("img_range");
-const axisSettings_img = document.getElementById("img_axis");
-const tempSettings_img = document.getElementById("img_temp");
-const uploadSetting_img = document.getElementById("img_upload_settings");
-const dfu_img = document.getElementById("img_dfu");
-const log_img = document.getElementById("img_log");
-const BLEsymbol_img = document.getElementById("img_BLEsymbol");
-const statusText_p = document.getElementById("statusText");
-const statusMag_p = document.getElementById("MagText");
 
-const Connection_span = document.getElementById("span_tooltip_connection");
-const HPVDropdownContent = document.getElementById("HPVDropdownContent_ul")
-const rangeDropdownContent = document.getElementById("RangeDropdownContent_ul")
-const axisDropdownContent = document.getElementById("AxisDropdownContent_ul")
-const axisLimitDropdownContent = document.getElementById("AxisLimitDropdownContent_ul")
-const tempDropdownContent = document.getElementById("TempDropdownContent_ul")
+const DomEl = {
+  img: {
+    connectionButton: document.getElementById("img_connection"),
+    HPVSettings: document.getElementById("img_HPV"),
+    rangeSettings: document.getElementById("img_range"),
+    axisSettings: document.getElementById("img_axis"),
+    tempSettings: document.getElementById("img_temp"),
+    uploadSetting: document.getElementById("img_upload_settings"),
+    dfu: document.getElementById("img_dfu"),
+    log: document.getElementById("img_log"),
+    BLEsymbol: document.getElementById("img_BLEsymbol"),
+  },
+  p: {
+    statusText: document.getElementById("statusText"),
+    statusMag: document.getElementById("MagText"),
+    toneFrequency: document.getElementById("toneFrequency"),
+    trumForce: document.getElementById("trumForce"), 
+  },
+  span: {
+    connection: document.getElementById("span_tooltip_connection"),
+  },
+  dropDown: {
+    HPV: document.getElementById("HPVDropdownContent_ul"),
+    range: document.getElementById("RangeDropdownContent_ul"),
+    axis: document.getElementById("AxisDropdownContent_ul"),
+    axisLimit: document.getElementById("AxisLimitDropdownContent_ul"),
+    temp: document.getElementById("TempDropdownContent_ul"),
+  },
+  input: {
+    trumLength: document.getElementById("trumLengthValue"),
+    beltWeight: document.getElementById("beltWeightValue"),
+  },
+};
 
-const trumLength_input = document.getElementById("trumLengthValue")
-trumLength_input.addEventListener('change', cleanPeakFreq);
-const beltWeight_input = document.getElementById("beltWeightValue")
-beltWeight_input.addEventListener('change', cleanPeakFreq);
-function cleanPeakFreq(){
-  peakFreq = 0;
-}
-const toneFrequency_p = document.getElementById("toneFrequency")
-const trumForce_p = document.getElementById("trumForce")
+DomEl.input.trumLength.addEventListener("change", cleanPeakFreq);
+DomEl.input.beltWeight.addEventListener("change", cleanPeakFreq);
 
-const titleFontSize = 25;
-const chartFontColor = "rgb(200, 200, 200)";
-const axisFontSize = 20;
-const axisTickFontSize = 18;
+const TitleFontSize = 25;
+const ChartFontColor = "rgb(200, 200, 200)";
+const AxisFontSize = 20;
+const AxisTickFontSize = 18;
 
-const dfuCommand = new Uint8Array(1);
-dfuCommand[0] = 1;
+const DfuCommand = new Uint8Array(1);
+DfuCommand[0] = 1;
 
-let initialCharacteristicRead = true;
+let InitialCharacteristicRead = true;
 
-let smapleFrequencyAcc = 3276.8;
-let displayFrequencyrange = (smapleFrequencyAcc / 2);
+let SmapleFrequencyAcc = 3276.8;
+let DisplayFrequencyrange = (SmapleFrequencyAcc / 2);
 
-let accChart;
-let accChartData = new Array(fftLength / 2).fill({ x: 0, y: 0 }).map(
+let AccChart;
+let AccChartData = new Array(FftLength / 2).fill({ x: 0, y: 0 }).map(
   (entry, index) => {
     return {
-      x: index * (displayFrequencyrange / ((fftLength / 2) - 1)),
+      x: index * (DisplayFrequencyrange / ((FftLength / 2) - 1)),
       y: null
     }
   }
 );
-let tempChart;
+let TempChart;
 
-let checkForBLE = new Promise(function (resolve, reject) {
+let CheckForBLE = new Promise(function (resolve, reject) {
   try {
     navigator.bluetooth.getAvailability()
       .then(isBluetoothAvailable => {
@@ -195,7 +204,7 @@ let checkForBLE = new Promise(function (resolve, reject) {
 });
 
 // The wake lock sentinel.
-let wakeLock = null;
+let WakeLock = null;
 
 window.onerror = function (msg, url, lineNo, columnNo, error) {
   console.log(`window.onerror:`);
@@ -207,28 +216,32 @@ window.onerror = function (msg, url, lineNo, columnNo, error) {
   return false;
 }
 
+function cleanPeakFreq() {
+  PeakFreq = 0;
+}
+
 function setup() {
   draw();
-  checkForBLE.then(function (result) {
+  CheckForBLE.then(function (result) {
     if (result) {
-      connectionButton_img.addEventListener('click', () => handleConnection());
+      DomEl.img.connectionButton.addEventListener('click', () => handleConnection());
       initAccChart();
       initTempChart();
       setupHPVDropdownContent(ADXL372accFilters);
       setupRangeDropdownContent(ADXL372Range);
       setupAxisDropdownContent(PossibleAxis);
       setupAxisLimitDropdownContent(PossibleAxisLimits);
-      axisLimitDropdownContent.style.display = "none";
+      DomEl.dropDown.axisLimit.style.display = "none";
       document.getElementById("img_axis_limit").addEventListener('click', showAxisLimitDropdownContent);
       setupTempDropdownContent(TempSampling);
-      HPVDropdownContent.addEventListener('click', (param) => updateChar8Bit(Characteristics.acc.filter, param.target.id.replace(/\D/g, '')));
-      rangeDropdownContent.addEventListener('click', (param) => updateChar8Bit(Characteristics.acc.range, param.target.id.replace(/\D/g, '')));
-      axisDropdownContent.addEventListener('click', (param) => updateChar8Bit(Characteristics.acc.axis, param.target.id.replace(/\D/g, '')));
-      axisLimitDropdownContent.addEventListener('click', (param) => setXAxisLimit(param.target.id.replace(/\D/g, '')));
-      tempDropdownContent.addEventListener('click', (param) => updateTemperatureChar(param.target.id.replace(/\D/g, '')));
+      DomEl.dropDown.HPV.addEventListener('click', (param) => updateChar8Bit(Characteristics.acc.filter, param.target.id.replace(/\D/g, '')));
+      DomEl.dropDown.range.addEventListener('click', (param) => updateChar8Bit(Characteristics.acc.range, param.target.id.replace(/\D/g, '')));
+      DomEl.dropDown.axis.addEventListener('click', (param) => updateChar8Bit(Characteristics.acc.axis, param.target.id.replace(/\D/g, '')));
+      DomEl.dropDown.axisLimit.addEventListener('click', (param) => setXAxisLimit(param.target.id.replace(/\D/g, '')));
+      DomEl.dropDown.temp.addEventListener('click', (param) => updateTemperatureChar(param.target.id.replace(/\D/g, '')));
     }
   }, function (err) {
-    connectionButton_img.className = 'barActionInactiveImage';
+    DomEl.img.connectionButton.className = 'barActionInactiveImage';
     document.getElementById('headerH1').style.display = "inherit";
     console.log(err);
   });
@@ -241,8 +254,8 @@ function setup() {
 // Function that attempts to request a screen wake lock.
 const requestWakeLock = async () => {
   try {
-    wakeLock = await navigator.wakeLock.request('screen');
-    wakeLock.addEventListener('release', () => {
+    WakeLock = await navigator.wakeLock.request('screen');
+    WakeLock.addEventListener('release', () => {
       console.log('Screen Wake Lock was released');
     });
     console.log('Screen Wake Lock is active');
@@ -252,10 +265,10 @@ const requestWakeLock = async () => {
 };
 
 function setXAxisLimit(dropdownID) {
-  accChart.resetZoom();
-  accChart.options.scales.xAxes[0].ticks.max = PossibleAxisLimits[dropdownID];
-  accChart.options.scales.xAxes[0].ticks.stepSize = PossibleAxisLimits[dropdownID] / 20;
-  accChart.update();
+  AccChart.resetZoom();
+  AccChart.options.scales.xAxes[0].ticks.max = PossibleAxisLimits[dropdownID];
+  AccChart.options.scales.xAxes[0].ticks.stepSize = PossibleAxisLimits[dropdownID] / 20;
+  AccChart.update();
   localStorage.setItem('xLimit', dropdownID);
 }
 
@@ -270,8 +283,8 @@ window.api.receive("documentCreated", (data) => {
   }
   else
   {
-    log_img.src = "images/Log_active.svg";
-    loggingActive = true;
+    DomEl.img.log.src = "images/Log_active.svg";
+    LoggingActive = true;
     deactivateSettings();
 
     HP_Filter =
@@ -282,14 +295,14 @@ window.api.receive("documentCreated", (data) => {
       ];
     Range = AccRanges[Characteristics.acc.range.value.getUint8(0)];
     Axis = PossibleAxis[Characteristics.acc.axis.value.getUint8(0)];
-    smapleFrequencyAcc =
+    SmapleFrequencyAcc =
       SensorBaseFrequency /
       GlobalFrequencyDivider /
       Characteristics.acc.divider.value.getUint8(0);
 
     let headerACC =
       `log file of Accelerometer;Sample Frequenzy:;` +
-      smapleFrequencyAcc +
+      SmapleFrequencyAcc +
       `;Hz;HP Filter:;` +
       HP_Filter +
       `;Hz;LP Filter:;` +
@@ -299,7 +312,7 @@ window.api.receive("documentCreated", (data) => {
       `;g;Axis:;` +
       Axis +
       `;Vaule Divider to get [g]:;` +
-      accVauleDivider;
+      AccVauleDivider;
 
     let subHeaderAcc;
     if (SoftwareVersion >= 3) {
@@ -335,10 +348,10 @@ window.api.receive("documentCreated", (data) => {
 });
 
 function logging(abort = false) {
-  if (loggingActive) {
-    log_img.src = 'images/Log.svg';
+  if (LoggingActive) {
+    DomEl.img.log.src = 'images/Log.svg';
 
-    loggingActive = false;
+    LoggingActive = false;
     activateSettings();
     
   } else {
@@ -373,68 +386,68 @@ function updateTemperatureChar(newvalueIndex) {
 // dropdown
 window.onclick = function (event) {
   if (!(event.target.id === 'img_HPV')) {
-    HPVDropdownContent.style.display = "none";
+    DomEl.dropDown.HPV.style.display = "none";
   }
   if (!(event.target.id === 'img_range')) {
-    rangeDropdownContent.style.display = "none";
+    DomEl.dropDown.range.style.display = "none";
   }
   if (!(event.target.id === 'img_axis')) {
-    axisDropdownContent.style.display = "none";
+    DomEl.dropDown.axis.style.display = "none";
   }
   if (!(event.target.id === 'img_axis_limit')) {
-    axisLimitDropdownContent.style.display = "none";
+    DomEl.dropDown.axisLimit.style.display = "none";
   }
   if (!(event.target.id === 'img_temp')) {
-    tempDropdownContent.style.display = "none";
+    DomEl.dropDown.temp.style.display = "none";
   }
   // console.log(event);
 }
 
 function showHPVDropdownContent() {
-  if (HPVDropdownContent.style.display === "none") {
-    HPVDropdownContent.style.display = "block";
+  if (DomEl.dropDown.HPV.style.display === "none") {
+    DomEl.dropDown.HPV.style.display = "block";
   } else {
-    HPVDropdownContent.style.display = "none";
+    DomEl.dropDown.HPV.style.display = "none";
   }
 }
 
 function showrangeDropdownContent() {
-  if (rangeDropdownContent.style.display === "none") {
-    rangeDropdownContent.style.display = "block";
+  if (DomEl.dropDown.range.style.display === "none") {
+    DomEl.dropDown.range.style.display = "block";
   } else {
-    rangeDropdownContent.style.display = "none";
+    DomEl.dropDown.range.style.display = "none";
   }
 }
 
 function showAxisDropdownContent() {
-  if (axisDropdownContent.style.display === "none") {
-    axisDropdownContent.style.display = "block";
+  if (DomEl.dropDown.axis.style.display === "none") {
+    DomEl.dropDown.axis.style.display = "block";
   } else {
-    axisDropdownContent.style.display = "none";
+    DomEl.dropDown.axis.style.display = "none";
   }
 }
 
 function showAxisLimitDropdownContent() {
-  if (axisLimitDropdownContent.style.display === "none") {
-    axisLimitDropdownContent.style.display = "block";
+  if (DomEl.dropDown.axisLimit.style.display === "none") {
+    DomEl.dropDown.axisLimit.style.display = "block";
   } else {
-    axisLimitDropdownContent.style.display = "none";
+    DomEl.dropDown.axisLimit.style.display = "none";
   }
 }
 
 function showTempDropdownContent() {
-  if (tempDropdownContent.style.display === "none") {
-    tempDropdownContent.style.display = "block";
+  if (DomEl.dropDown.temp.style.display === "none") {
+    DomEl.dropDown.temp.style.display = "block";
   } else {
-    tempDropdownContent.style.display = "none";
+    DomEl.dropDown.temp.style.display = "none";
   }
 }
 
 function setupHPVDropdownContent(filterlist) {
-  HPVDropdownContent.innerHTML = `<li><p id="0" class="dropdownItem">off</p></li>`;
+  DomEl.dropDown.HPV.innerHTML = `<li><p id="0" class="dropdownItem">off</p></li>`;
   let filterlistlength = filterlist.length;
   for (let index = 1; index < filterlistlength; index++) {
-    HPVDropdownContent.innerHTML += `<li><p id="f` + index + `" class="dropdownItem">` + filterlist[index] + `Hz</p></li>`;
+    DomEl.dropDown.HPV.innerHTML += `<li><p id="f` + index + `" class="dropdownItem">` + filterlist[index] + `Hz</p></li>`;
   }
 }
 
@@ -447,42 +460,42 @@ function setupLPVDropdownContent(filterlist) {
 }
 
 function setupRangeDropdownContent(rangelist) {
-  rangeDropdownContent.innerHTML = ``;
+  DomEl.dropDown.range.innerHTML = ``;
   let rangelistlength = rangelist.length;
   for (let index = 0; index < rangelistlength; index++) {
     if (!(rangelist[index] === ' ')) {
-      rangeDropdownContent.innerHTML += `<li><p id="r` + index + `" class="dropdownItem">` + rangelist[index] + `g</p></li>`;
+      DomEl.dropDown.range.innerHTML += `<li><p id="r` + index + `" class="dropdownItem">` + rangelist[index] + `g</p></li>`;
     }
   }
 }
 
 function setupAxisDropdownContent(axislist) {
-  axisDropdownContent.innerHTML = ``;
+  DomEl.dropDown.axis.innerHTML = ``;
   let axislistlength = axislist.length;
   for (let index = 0; index < axislistlength; index++) {
-    axisDropdownContent.innerHTML += `<li><p id="a` + index + `" class="dropdownItem">` + axislist[index] + `</p></li>`;
+    DomEl.dropDown.axis.innerHTML += `<li><p id="a` + index + `" class="dropdownItem">` + axislist[index] + `</p></li>`;
   }
 }
 
 function setupAxisLimitDropdownContent(axisLimitlist) {
-  axisLimitDropdownContent.innerHTML = ``;
+  DomEl.dropDown.axisLimit.innerHTML = ``;
   let axisLimitlistlength = axisLimitlist.length;
   for (let index = 0; index < axisLimitlistlength; index++) {
-    axisLimitDropdownContent.innerHTML += `<li><p id="l` + index + `" class="dropdownItem">` + axisLimitlist[index] + ` Hz</p></li>`;
+    DomEl.dropDown.axisLimit.innerHTML += `<li><p id="l` + index + `" class="dropdownItem">` + axisLimitlist[index] + ` Hz</p></li>`;
   }
 }
 
 function setupTempDropdownContent(tempSamplinglist) {
-  tempDropdownContent.innerHTML = ``;
+  DomEl.dropDown.temp.innerHTML = ``;
   let tempSamplinglistlength = tempSamplinglist.length;
   for (let index = 0; index < tempSamplinglistlength; index++) {
-    tempDropdownContent.innerHTML += `<li><p id="t` + index + `" class="dropdownItem">` + tempSamplinglist[index] + `</p></li>`;
+    DomEl.dropDown.temp.innerHTML += `<li><p id="t` + index + `" class="dropdownItem">` + tempSamplinglist[index] + `</p></li>`;
   }
 }
 /************************************************************************/
 
 function handleConnection() {
-  if (isConnected) {
+  if (IsConnected) {
     onDisconnectButtonClick();
   } else {
     onButtonClick()
@@ -490,56 +503,56 @@ function handleConnection() {
 }
 
 function activateSettings() {
-  HPVSettings_img.src = 'images/HPV.svg';
-  rangeSettings_img.src = 'images/range.svg';
-  axisSettings_img.src = 'images/axis.svg';
-  tempSettings_img.src = 'images/Temp.svg';
-  uploadSetting_img.src = 'images/upload.svg';
-  dfu_img.src = 'images/dfu.svg';
-  HPVSettings_img.addEventListener('click', showHPVDropdownContent);
-  rangeSettings_img.addEventListener('click', showrangeDropdownContent);
-  axisSettings_img.addEventListener('click', showAxisDropdownContent);
-  tempSettings_img.addEventListener('click', showTempDropdownContent);
-  uploadSetting_img.addEventListener('click', uploadSettingsToSensor);
-  dfu_img.addEventListener('click', switchToDFUMode);
+  DomEl.img.HPVSettings.src = 'images/HPV.svg';
+  DomEl.img.rangeSettings.src = 'images/range.svg';
+  DomEl.img.axisSettings.src = 'images/axis.svg';
+  DomEl.img.tempSettings.src = 'images/Temp.svg';
+  DomEl.img.uploadSetting.src = 'images/upload.svg';
+  DomEl.img.dfu.src = 'images/dfu.svg';
+  DomEl.img.HPVSettings.addEventListener('click', showHPVDropdownContent);
+  DomEl.img.rangeSettings.addEventListener('click', showrangeDropdownContent);
+  DomEl.img.axisSettings.addEventListener('click', showAxisDropdownContent);
+  DomEl.img.tempSettings.addEventListener('click', showTempDropdownContent);
+  DomEl.img.uploadSetting.addEventListener('click', uploadSettingsToSensor);
+  DomEl.img.dfu.addEventListener('click', switchToDFUMode);
 }
 
 function deactivateSettings() {
-  HPVSettings_img.src = 'images/HPV_gray.svg';
-  rangeSettings_img.src = 'images/range_gray.svg';
-  axisSettings_img.src = 'images/axis_gray.svg';
-  tempSettings_img.src = 'images/Temp_gray.svg';
-  uploadSetting_img.src = 'images/upload_gray.svg';
-  dfu_img.src = 'images/dfu_gray.svg';
-  HPVSettings_img.removeEventListener('click', showHPVDropdownContent);
-  rangeSettings_img.removeEventListener('click', showrangeDropdownContent);
-  axisSettings_img.removeEventListener('click', showAxisDropdownContent);
-  tempSettings_img.removeEventListener('click', showTempDropdownContent);
-  uploadSetting_img.removeEventListener('click', uploadSettingsToSensor);
-  dfu_img.removeEventListener('click', switchToDFUMode);
+  DomEl.img.HPVSettings.src = 'images/HPV_gray.svg';
+  DomEl.img.rangeSettings.src = 'images/range_gray.svg';
+  DomEl.img.axisSettings.src = 'images/axis_gray.svg';
+  DomEl.img.tempSettings.src = 'images/Temp_gray.svg';
+  DomEl.img.uploadSetting.src = 'images/upload_gray.svg';
+  DomEl.img.dfu.src = 'images/dfu_gray.svg';
+  DomEl.img.HPVSettings.removeEventListener('click', showHPVDropdownContent);
+  DomEl.img.rangeSettings.removeEventListener('click', showrangeDropdownContent);
+  DomEl.img.axisSettings.removeEventListener('click', showAxisDropdownContent);
+  DomEl.img.tempSettings.removeEventListener('click', showTempDropdownContent);
+  DomEl.img.uploadSetting.removeEventListener('click', uploadSettingsToSensor);
+  DomEl.img.dfu.removeEventListener('click', switchToDFUMode);
 }
 
 function draw() {
-  if (isConnected) {
-    BLEsymbol_img.src = 'images/logoSB.svg';
-    connectionButton_img.src = 'images/BLE_disconnect.svg';
-    log_img.src = 'images/Log.svg';
-    Connection_span.textContent = 'Disconnect from Sensor';
+  if (IsConnected) {
+    DomEl.img.BLEsymbol.src = 'images/logoSB.svg';
+    DomEl.img.connectionButton.src = 'images/BLE_disconnect.svg';
+    DomEl.img.log.src = 'images/Log.svg';
+    DomEl.span.connection.textContent = 'Disconnect from Sensor';
     activateSettings();
-    log_img.addEventListener('click', loggingCallback);
+    DomEl.img.log.addEventListener('click', loggingCallback);
     // Request a screen wake lock…
     requestWakeLock();
   } else {
-    BLEsymbol_img.src = "images/logoSB_dis.svg";
-    connectionButton_img.src = 'images/search.svg';
-    log_img.src = 'images/Log_gray.svg';
-    Connection_span.textContent = 'Start scanning for Sensors';
+    DomEl.img.BLEsymbol.src = "images/logoSB_dis.svg";
+    DomEl.img.connectionButton.src = 'images/search.svg';
+    DomEl.img.log.src = 'images/Log_gray.svg';
+    DomEl.span.connection.textContent = 'Start scanning for Sensors';
     deactivateSettings();
-    log_img.removeEventListener('click', loggingCallback);
+    DomEl.img.log.removeEventListener('click', loggingCallback);
     // Release the screen wake lock…
-    if (wakeLock !== null) {
-      wakeLock.release();
-      wakeLock = null;
+    if (WakeLock !== null) {
+      WakeLock.release();
+      WakeLock = null;
     }
   }
 }
@@ -550,7 +563,7 @@ function uploadSettingsToSensor() {
   updateChar16Bit(Characteristics.acc.divider, accelerometerDividerInputValue);
 
   let slider = document.getElementById("inp_sli_temperatureDivider");
-  let temperatureDividerInputValue = mapLinearToLog(slider.value, slider.min, slider.max, temperatureFreqSlideMin, temperatureFreqSlideMax);
+  let temperatureDividerInputValue = mapLinearToLog(slider.value, slider.min, slider.max, TemperatureFreqSlideMin, TemperatureFreqSlideMax);
   temperatureDividerInputValue = Math.round(SensorBaseFrequency / (GlobalFrequencyDivider * temperatureDividerInputValue));
   setTimeout(() => {
     updateChar16Bit(Characteristics.temp.divider, temperatureDividerInputValue);
@@ -565,11 +578,11 @@ function uploadSettingsToSensor() {
 
 function switchToDFUMode() {
   console.log('dfuCharacteristic =' + Characteristics.dfu.dfu);
-  Characteristics.dfu.dfu.writeValue(dfuCommand);
+  Characteristics.dfu.dfu.writeValue(DfuCommand);
 }
 
 function onButtonClick() {
-  bluetoothDevice = null;
+  BluetoothDevice = null;
 
   let options = {
     filters: [
@@ -589,23 +602,23 @@ function onButtonClick() {
   };
 
   console.log('Requesting Bluetooth Device...');
-  statusText_p.innerHTML = `Scanning for Bluetooth Device`;
+  DomEl.p.statusText.innerHTML = `Scanning for Bluetooth Device`;
   navigator.bluetooth.requestDevice(options)
     .then(device => {
       console.log('Connecting to GATT Server...');
-      statusText_p.innerHTML = `Connecting to GATT Server`;
-      bluetoothDevice = device;
-      bluetoothDevice.addEventListener('gattserverdisconnected', onDisconnected);
+      DomEl.p.statusText.innerHTML = `Connecting to GATT Server`;
+      BluetoothDevice = device;
+      BluetoothDevice.addEventListener('gattserverdisconnected', onDisconnected);
       return device.gatt.connect();
     })
     .then(server => {
       console.log('Getting Services...');
-      statusText_p.innerHTML = `Getting Services`;
+      DomEl.p.statusText.innerHTML = `Getting Services`;
       return server.getPrimaryServices();
     })
     .then(services => {
       console.log('Getting Characteristics...');
-      statusText_p.innerHTML = `Getting Characteristics`;
+      DomEl.p.statusText.innerHTML = `Getting Characteristics`;
       let queue = Promise.resolve();
       console.log('services: ', services);
       services.forEach(service => {
@@ -621,8 +634,8 @@ function onButtonClick() {
                     .catch(error => {
                       console.warn('Argh! ' + error);
                       console.warn(`Fail while characteristics.acc.filter.readValue()`);
-                      statusText_p.innerHTML = `Connection failed`;
-                      bluetoothDevice.gatt.disconnect();
+                      DomEl.p.statusText.innerHTML = `Connection failed`;
+                      BluetoothDevice.gatt.disconnect();
                       return;
                     });
                 }, 200);
@@ -653,8 +666,8 @@ function onButtonClick() {
                     .catch(error => {
                       console.warn('Argh! ' + error);
                       console.warn(`Fail while accelerometerDataCharacteristic.startNotifications()`);
-                      statusText_p.innerHTML = `Connection failed`;
-                      bluetoothDevice.gatt.disconnect();
+                      DomEl.p.statusText.innerHTML = `Connection failed`;
+                      BluetoothDevice.gatt.disconnect();
                       return;
                     });
                 }
@@ -758,16 +771,16 @@ function onButtonClick() {
               }
             });
           }
-          isConnected = true;
+          IsConnected = true;
           draw();
-          statusText_p.innerHTML = `Connection complete`;
+          DomEl.p.statusText.innerHTML = `Connection complete`;
         }));
       });
       return queue;
     })
     .catch(error => {
       console.warn('Argh! ' + error);
-      statusText_p.innerHTML = error;
+      DomEl.p.statusText.innerHTML = error;
       draw();
     });
 }
@@ -783,12 +796,12 @@ function getSupportedProperties(characteristic) {
 }
 
 function onDisconnectButtonClick() {
-  if (!bluetoothDevice) {
+  if (!BluetoothDevice) {
     return;
   }
   console.log('Disconnecting from Bluetooth Device...');
-  if (bluetoothDevice.gatt.connected) {
-    bluetoothDevice.gatt.disconnect();
+  if (BluetoothDevice.gatt.connected) {
+    BluetoothDevice.gatt.disconnect();
   } else {
     console.log('Bluetooth Device is already disconnected');
   }
@@ -796,8 +809,8 @@ function onDisconnectButtonClick() {
 
 function onDisconnected(event) {
   console.log('Bluetooth Device disconnected');
-  statusText_p.innerHTML = `Disconnected`;
-  isConnected = false;
+  DomEl.p.statusText.innerHTML = `Disconnected`;
+  IsConnected = false;
   logging(true);
   draw();
 }
@@ -816,12 +829,12 @@ function handleaccelerometerDataCharacteristicChanged(event) {
   let dataValueLength = event.target.value.byteLength;
 
   if (event.target.value.getUint8(0) >= 1) {
-    if (accChart.data.datasets.length === 3) {
-      accChart.options.legend.display = true;
-      accChart.data.datasets.splice(1, 2);
+    if (AccChart.data.datasets.length === 3) {
+      AccChart.options.legend.display = true;
+      AccChart.data.datasets.splice(1, 2);
     }
 
-    if (accChart.data.datasets[0].label !== PossibleAxis[event.target.value.getUint8(0)]) { accChart.data.datasets[0].label = PossibleAxis[event.target.value.getUint8(0)]; }
+    if (AccChart.data.datasets[0].label !== PossibleAxis[event.target.value.getUint8(0)]) { AccChart.data.datasets[0].label = PossibleAxis[event.target.value.getUint8(0)]; }
 
     let logdataAccTemp = '';
     for (let i = 1; i < dataValueLength - 4; i += 2) {
@@ -829,11 +842,11 @@ function handleaccelerometerDataCharacteristicChanged(event) {
       let magValue
       if (SoftwareVersion >= 3) {
         magValue = (value >> 14) & 0x3;
-        statusMag_p.innerHTML=magValue;
+        DomEl.p.statusMag.innerHTML=magValue;
         value = convert12to16int(value);
       }
-      accData[accDataPointer] = value / accVauleDivider;
-      if (loggingActive) {
+      AccData[AccDataPointer] = value / AccVauleDivider;
+      if (LoggingActive) {
         try {
           if (i < (dataValueLength - 6)) {
             logdataAccTemp += (value + `;` + magValue + `;` + `\n`);
@@ -842,41 +855,41 @@ function handleaccelerometerDataCharacteristicChanged(event) {
           }
         } catch (error) {
           console.warn('Argh! ' + error);
-          statusText_p.innerHTML = error;
+          DomEl.p.statusText.innerHTML = error;
         }
       }
-      if (accDataPointer < fftLength - 1)
-        accDataPointer++;
+      if (AccDataPointer < FftLength - 1)
+        AccDataPointer++;
       else
-        accDataPointer = 0;
+        AccDataPointer = 0;
     }
-    if (loggingActive) {
+    if (LoggingActive) {
       try {
         logdataAccTemp += (event.target.value.getInt32(dataValueLength - 4));
         window.api.send("writeToAccDocument", logdataAccTemp+"\n");
       } catch (error) {
         console.warn('Argh! ' + error);
-        statusText_p.innerHTML = error;
+        DomEl.p.statusText.innerHTML = error;
       }
     }
 
-    if (accUpdateDividerValue >= accUpdateDivider) {
-      accUpdateDividerValue = 0;
-      let fftdata = [...accData];
-      fftTotalResult = getTotalFFT(fftdata).slice(0, fftLength / 2);
+    if (AccUpdateDividerValue >= AccUpdateDivider) {
+      AccUpdateDividerValue = 0;
+      let fftdata = [...AccData];
+      fftTotalResult = getTotalFFT(fftdata).slice(0, FftLength / 2);
 
       let indexOfMax = fftTotalResult.slice(1).reduce((iMax, x, i, arr) => x > arr[iMax] ? i : iMax, 0) + 1;
-      newPeakFreq = Object.values(accChartData)[indexOfMax].x
+      newPeakFreq = Object.values(AccChartData)[indexOfMax].x
 
-      if (peakFreq != newPeakFreq)
+      if (PeakFreq != newPeakFreq)
       {
-        peakFreq = newPeakFreq;
+        PeakFreq = newPeakFreq;
 
-        toneFrequency_p.innerHTML = newPeakFreq.toFixed(1);
-        trumForce_p.innerHTML = (newPeakFreq**2 * 4 * Number(beltWeight_input.value) * (Number(trumLength_input.value)/1000)**2).toFixed(1);
+        DomEl.p.toneFrequency.innerHTML = newPeakFreq.toFixed(1);
+        DomEl.p.trumForce.innerHTML = (newPeakFreq**2 * 4 * Number(DomEl.input.beltWeight.value) * (Number(DomEl.input.trumLength.value)/1000)**2).toFixed(1);
       }
 
-      accChart.data.datasets[0].data = accChart.data.datasets[0].data.map(
+      AccChart.data.datasets[0].data = AccChart.data.datasets[0].data.map(
         (entry, index) => {
           return {
             x: entry.x,
@@ -884,17 +897,17 @@ function handleaccelerometerDataCharacteristicChanged(event) {
           }
         }
       );
-      accChart.update();
+      AccChart.update();
     }
     else
-      accUpdateDividerValue++;
+      AccUpdateDividerValue++;
   } else if (event.target.value.getUint8(0) == 0) {
-    if (accChart.data.datasets.length === 1) {
-      accChart.data.datasets[0].label = 'x Axis';
-      accChart.options.legend.display = true;
+    if (AccChart.data.datasets.length === 1) {
+      AccChart.data.datasets[0].label = 'x Axis';
+      AccChart.options.legend.display = true;
       let newDataset = {
         label: 'y Axis',
-        data: accChartData,
+        data: AccChartData,
         backgroundColor: 'rgb(68, 192, 37)',
         borderColor: 'rgb(68, 192, 37)',
         fill: false,
@@ -903,15 +916,15 @@ function handleaccelerometerDataCharacteristicChanged(event) {
       };
       let newDataset2 = {
         label: 'z Axis',
-        data: accChartData,
+        data: AccChartData,
         backgroundColor: 'rgb(22, 11, 179)',
         borderColor: 'rgb(22, 11, 179)',
         fill: false,
         pointHoverBackgroundColor: 'rgb(218, 15, 15)',
         borderWidth: 3
       };
-      accChart.data.datasets.push(newDataset);
-      accChart.data.datasets.push(newDataset2);
+      AccChart.data.datasets.push(newDataset);
+      AccChart.data.datasets.push(newDataset2);
     }
 
     let logdataAccTemp = '';
@@ -923,10 +936,10 @@ function handleaccelerometerDataCharacteristicChanged(event) {
       let valueZ = event.target.value.getInt16(i);
       i = i + 2;
 
-      accDataX[accDataPointer] = valueX / accVauleDivider;
-      accDataY[accDataPointer] = valueY / accVauleDivider;
-      accDataZ[accDataPointer] = valueZ / accVauleDivider;
-      if (loggingActive) {
+      AccDataX[AccDataPointer] = valueX / AccVauleDivider;
+      AccDataY[AccDataPointer] = valueY / AccVauleDivider;
+      AccDataZ[AccDataPointer] = valueZ / AccVauleDivider;
+      if (LoggingActive) {
         try {
           if (i <= (dataValueLength - 4 - 2 * 3)) {
             logdataAccTemp += (valueX + `;` + valueY + `;` + valueZ + `;` + `\n`);
@@ -935,34 +948,34 @@ function handleaccelerometerDataCharacteristicChanged(event) {
           }
         } catch (error) {
           console.warn('Argh! ' + error);
-          statusText_p.innerHTML = error;
+          DomEl.p.statusText.innerHTML = error;
         }
       }
-      if (accDataPointer < fftLength - 1)
-        accDataPointer++;
+      if (AccDataPointer < FftLength - 1)
+        AccDataPointer++;
       else
-        accDataPointer = 0;
+        AccDataPointer = 0;
     }
-    if (loggingActive) {
+    if (LoggingActive) {
       try {
         logdataAccTemp += (event.target.value.getInt32(dataValueLength - 4));
         window.api.send("writeToAccDocument", logdataAccTemp + "\n");
       } catch (error) {
         console.warn('Argh! ' + error);
-        statusText_p.innerHTML = error;
+        DomEl.p.statusText.innerHTML = error;
       }
     }
 
-    if (accUpdateDividerValue >= accUpdateDivider * 3) {
-      accUpdateDividerValue = 0;
-      let fftdataX = [...accDataX];
-      let fftdataY = [...accDataY];
-      let fftdataZ = [...accDataZ];
-      let fftTotalResultX = getTotalFFT(fftdataX).slice(0, fftLength / 2);
-      let fftTotalResultY = getTotalFFT(fftdataY).slice(0, fftLength / 2);
-      let fftTotalResultZ = getTotalFFT(fftdataZ).slice(0, fftLength / 2);
+    if (AccUpdateDividerValue >= AccUpdateDivider * 3) {
+      AccUpdateDividerValue = 0;
+      let fftdataX = [...AccDataX];
+      let fftdataY = [...AccDataY];
+      let fftdataZ = [...AccDataZ];
+      let fftTotalResultX = getTotalFFT(fftdataX).slice(0, FftLength / 2);
+      let fftTotalResultY = getTotalFFT(fftdataY).slice(0, FftLength / 2);
+      let fftTotalResultZ = getTotalFFT(fftdataZ).slice(0, FftLength / 2);
 
-      accChart.data.datasets[0].data = accChart.data.datasets[0].data.map(
+      AccChart.data.datasets[0].data = AccChart.data.datasets[0].data.map(
         (entry, index) => {
           return {
             x: entry.x,
@@ -970,7 +983,7 @@ function handleaccelerometerDataCharacteristicChanged(event) {
           }
         }
       );
-      accChart.data.datasets[1].data = accChart.data.datasets[1].data.map(
+      AccChart.data.datasets[1].data = AccChart.data.datasets[1].data.map(
         (entry, index) => {
           return {
             x: entry.x,
@@ -978,7 +991,7 @@ function handleaccelerometerDataCharacteristicChanged(event) {
           }
         }
       );
-      accChart.data.datasets[2].data = accChart.data.datasets[2].data.map(
+      AccChart.data.datasets[2].data = AccChart.data.datasets[2].data.map(
         (entry, index) => {
           return {
             x: entry.x,
@@ -986,8 +999,8 @@ function handleaccelerometerDataCharacteristicChanged(event) {
           }
         }
       );
-      accChart.update();
-      if (loggingActive) {
+      AccChart.update();
+      if (LoggingActive) {
         if (performance.memory.jsHeapSizeLimit === performance.memory.usedJSHeapSize) {
           console.log(`Stop logging (memory problems)`);
           logging(true);
@@ -995,24 +1008,24 @@ function handleaccelerometerDataCharacteristicChanged(event) {
       }
     }
     else
-      accUpdateDividerValue++;
+      AccUpdateDividerValue++;
   }
 }
 
 function handletemperatureDataCharacteristicChanged(event) {
   let dataValueLength = event.target.value.byteLength;
   for (let i = 0; i < dataValueLength - 4; i += 2) {
-    tempTime = tempTime + (1 / temperature_time_divider);
+    TempTime = TempTime + (1 / Temperature_time_divider);
     let value = event.target.value.getInt16(i) / TEMPERATURE_DIVIDER;
-    if (value < tempYMin)
-      tempYMin = value;
+    if (value < TempYMin)
+      TempYMin = value;
 
-    if (value > tempYMax)
-      tempYMax = value;
+    if (value > TempYMax)
+      TempYMax = value;
 
-    tempChart.data.datasets[0].data.push({ x: tempTime, y: value });
+    TempChart.data.datasets[0].data.push({ x: TempTime, y: value });
 
-    if (loggingActive) {
+    if (LoggingActive) {
       if (i < (dataValueLength - 6)) {
         window.api.send("writeToTempDocument", value + `;` + `\n`);
       } else {
@@ -1020,35 +1033,35 @@ function handletemperatureDataCharacteristicChanged(event) {
       }
     }
   }
-  if (loggingActive) {
+  if (LoggingActive) {
     window.api.send(
       "writeToTempDocument",
       event.target.value.getInt32(dataValueLength - 4) + "\n"
     );
   }
 
-  tempChart.resetZoom();
-  tempChart.config.options.scales.yAxes[0].ticks.min = Math.round(tempYMin - tempAxisAhead);
-  tempChart.config.options.scales.yAxes[0].ticks.max = Math.round(tempYMax + tempAxisAhead);
-  if (tempTime - TEMP_TIME_WINDOW > 0) {
-    tempChart.config.options.scales.xAxes[0].ticks.min = Math.round((tempTime - TEMP_TIME_WINDOW) * 10) / 10;
-    tempChart.config.options.scales.xAxes[0].ticks.max = Math.round(tempTime * 10) / 10;
+  TempChart.resetZoom();
+  TempChart.config.options.scales.yAxes[0].ticks.min = Math.round(TempYMin - TempAxisAhead);
+  TempChart.config.options.scales.yAxes[0].ticks.max = Math.round(TempYMax + TempAxisAhead);
+  if (TempTime - TEMP_TIME_WINDOW > 0) {
+    TempChart.config.options.scales.xAxes[0].ticks.min = Math.round((TempTime - TEMP_TIME_WINDOW) * 10) / 10;
+    TempChart.config.options.scales.xAxes[0].ticks.max = Math.round(TempTime * 10) / 10;
   }
 
-  tempChart.update();
+  TempChart.update();
 }
 
 function handleAccelerometerFilterCharacteristicChanged(event) {
   handleSetupCharacteristicChanged();
   console.log('Accelerometer high pass filter = ' + ADXL372accFilters[Characteristics.acc.filter.value.getUint8(0)] + ' Hz');
-  if (initialCharacteristicRead){
+  if (InitialCharacteristicRead){
     // accelerometerLpFilterCharacteristic.readValue()
     Characteristics.acc.lpFilter.readValue()
       .catch(error => {
         console.warn('Argh! ' + error);
         console.warn(`Fail while Characteristics.acc.lpFilter.readValue()`);
-        statusText_p.innerHTML = `Connection failed`;
-        bluetoothDevice.gatt.disconnect();
+        DomEl.p.statusText.innerHTML = `Connection failed`;
+        BluetoothDevice.gatt.disconnect();
         return;
       });
   }
@@ -1057,13 +1070,13 @@ function handleAccelerometerFilterCharacteristicChanged(event) {
 function handleAccelerometerLpFilterCharacteristicChanged(event) {
   handleSetupCharacteristicChanged();
   console.log('Accelerometer low pass filter = ' + ADXL372accLpFilters[Characteristics.acc.lpFilter.value.getUint8(0)] + ' Hz');
-  if (initialCharacteristicRead) {
+  if (InitialCharacteristicRead) {
     Characteristics.acc.range.readValue()
       .catch(error => {
         console.warn('Argh! ' + error);
         console.warn(`Fail while Characteristics.acc.range.readValue()`);
-        statusText_p.innerHTML = `Connection failed`;
-        bluetoothDevice.gatt.disconnect();
+        DomEl.p.statusText.innerHTML = `Connection failed`;
+        BluetoothDevice.gatt.disconnect();
         return;
       });
   }
@@ -1072,13 +1085,13 @@ function handleAccelerometerLpFilterCharacteristicChanged(event) {
 function handleaccelerometerRangeCharacteristicChanged(event) {
   handleSetupCharacteristicChanged();
   console.log('Accelerometer range = ' + ADXL372Range[Characteristics.acc.range.value.getUint8(0)]);
-  if (initialCharacteristicRead) {
+  if (InitialCharacteristicRead) {
     Characteristics.acc.divider.readValue()
       .catch(error => {
         console.warn('Argh! ' + error);
         console.warn(`Fail while accelerometerDividerCharacteristic.readValue()`);
-        statusText_p.innerHTML = `Connection failed`;
-        bluetoothDevice.gatt.disconnect();
+        DomEl.p.statusText.innerHTML = `Connection failed`;
+        BluetoothDevice.gatt.disconnect();
         return;
       });
   }
@@ -1086,13 +1099,13 @@ function handleaccelerometerRangeCharacteristicChanged(event) {
 
 function handleaccelerometerDividerCharacteristicChanged(event) {
   handleSetupCharacteristicChanged();
-  if (initialCharacteristicRead) {
+  if (InitialCharacteristicRead) {
     Characteristics.acc.axis.readValue()
       .catch(error => {
         console.warn('Argh! ' + error);
         console.warn(`Fail while accelerometerAxisCharacteristic.readValue()`);
-        statusText_p.innerHTML = `Connection failed`;
-        bluetoothDevice.gatt.disconnect();
+        DomEl.p.statusText.innerHTML = `Connection failed`;
+        BluetoothDevice.gatt.disconnect();
         return;
       });
   }
@@ -1103,8 +1116,8 @@ function handleaccelerometerDividerCharacteristicChanged(event) {
         .catch(error => {
           console.warn('Argh! ' + error);
           console.warn(`Fail while Characteristics.acc.lpFilter.readValue()`);
-          statusText_p.innerHTML = `Connection failed`;
-          bluetoothDevice.gatt.disconnect();
+          DomEl.p.statusText.innerHTML = `Connection failed`;
+          BluetoothDevice.gatt.disconnect();
           return;
         });
     }
@@ -1114,27 +1127,27 @@ function handleaccelerometerDividerCharacteristicChanged(event) {
 function handleaccelerometerAxisCharacteristicChanged(event) {
   handleSetupCharacteristicChanged();
   console.log('Accelerometer transmitting Axis = ' + PossibleAxis[Characteristics.acc.axis.value.getUint8(0)]);
-  if (initialCharacteristicRead) {
+  if (InitialCharacteristicRead) {
     Characteristics.acc.type.readValue()
       .catch(error => {
         console.warn('Argh! ' + error);
         console.warn(`Fail while accelerometerTypeCharacteristic.readValue()`);
-        statusText_p.innerHTML = `Connection failed`;
-        bluetoothDevice.gatt.disconnect();
+        DomEl.p.statusText.innerHTML = `Connection failed`;
+        BluetoothDevice.gatt.disconnect();
         return;
       });
   }
 }
 
 function handleaccelerometerTypeCharacteristicChanged(event) {
-  console.log('Accelerometer Type = ' + usedAccelerometer[Characteristics.acc.type.value.getUint8(0)]);
-  if (initialCharacteristicRead) {
+  console.log('Accelerometer Type = ' + UsedAccelerometer[Characteristics.acc.type.value.getUint8(0)]);
+  if (InitialCharacteristicRead) {
     Characteristics.acc.resolution.readValue()
       .catch(error => {
         console.warn('Argh! ' + error);
         console.warn(`Fail while accelerometerResolutionCharacteristic.readValue()`);
-        statusText_p.innerHTML = `Connection failed`;
-        bluetoothDevice.gatt.disconnect();
+        DomEl.p.statusText.innerHTML = `Connection failed`;
+        BluetoothDevice.gatt.disconnect();
         return;
       });
   }
@@ -1143,13 +1156,13 @@ function handleaccelerometerTypeCharacteristicChanged(event) {
 function handleaccelerometerResolutionCharacteristicChanged(event) {
   handleSetupCharacteristicChanged();
   console.log('Accelerometer Resolution = ' + Characteristics.acc.resolution.value.getUint8(0) + ' Bit');
-  if (initialCharacteristicRead) {
+  if (InitialCharacteristicRead) {
     Characteristics.acc.bin.readValue()
       .catch(error => {
         console.warn('Argh! ' + error);
         console.warn(`Fail while accelerometerBinCharacteristic.readValue()`);
-        statusText_p.innerHTML = `Connection failed`;
-        bluetoothDevice.gatt.disconnect();
+        DomEl.p.statusText.innerHTML = `Connection failed`;
+        BluetoothDevice.gatt.disconnect();
         return;
       });
   }
@@ -1157,13 +1170,13 @@ function handleaccelerometerResolutionCharacteristicChanged(event) {
 
 function handleaccelerometerBinCharacteristicChanged(event) {
   console.log('Accelerometer bin size = ' + Characteristics.acc.bin.value.getUint8(0) + ' values');
-  if (initialCharacteristicRead) {
+  if (InitialCharacteristicRead) {
     Characteristics.temp.divider.readValue()
       .catch(error => {
         console.warn('Argh! ' + error);
         console.warn(`Fail while temperatureDividerCharacteristic.readValue()`);
-        statusText_p.innerHTML = `Connection failed`;
-        bluetoothDevice.gatt.disconnect();
+        DomEl.p.statusText.innerHTML = `Connection failed`;
+        BluetoothDevice.gatt.disconnect();
         return;
       });
   }
@@ -1171,13 +1184,13 @@ function handleaccelerometerBinCharacteristicChanged(event) {
 
 function handletemperatureDividerCharacteristicChanged(event) {
   handleSetupCharacteristicChanged();
-  if (initialCharacteristicRead) {
+  if (InitialCharacteristicRead) {
     Characteristics.voltage.divider.readValue()
       .catch(error => {
         console.warn('Argh! ' + error);
         console.warn(`Fail while voltageDividerCharacteristic.readValue()`);
-        statusText_p.innerHTML = `Connection failed`;
-        bluetoothDevice.gatt.disconnect();
+        DomEl.p.statusText.innerHTML = `Connection failed`;
+        BluetoothDevice.gatt.disconnect();
         return;
       });
   }
@@ -1185,13 +1198,13 @@ function handletemperatureDividerCharacteristicChanged(event) {
 
 function handlevoltageDividerCharacteristicChanged(event) {
   handleSetupCharacteristicChanged();
-  if (initialCharacteristicRead) {
+  if (InitialCharacteristicRead) {
     Characteristics.info.hardwareVersion.readValue()
       .catch(error => {
         console.warn('Argh! ' + error);
         console.warn(`Fail while infoHardwareVersionCharacteristic.readValue()`);
-        statusText_p.innerHTML = `Connection failed`;
-        bluetoothDevice.gatt.disconnect();
+        DomEl.p.statusText.innerHTML = `Connection failed`;
+        BluetoothDevice.gatt.disconnect();
         return;
       });
   }
@@ -1204,13 +1217,13 @@ function handlevoltageDataCharacteristicChanged(event) {
 function handleinfoHardwareVersionCharacteristicChanged(event) {
   HardwareVersion = Characteristics.info.hardwareVersion.value.getUint8(0);
   console.log('Hardware Version = ' + HardwareVersion);
-  if (initialCharacteristicRead) {
+  if (InitialCharacteristicRead) {
     Characteristics.info.softwareVersion.readValue()
       .catch(error => {
         console.warn('Argh! ' + error);
         console.warn(`Fail while infoSoftwareVersionCharacteristic.readValue()`);
         statusTexwarnt_p.innerHTML = `Connection failed`;
-        bluetoothDevice.gatt.disconnect();
+        BluetoothDevice.gatt.disconnect();
         return;
       });
   }
@@ -1219,13 +1232,13 @@ function handleinfoHardwareVersionCharacteristicChanged(event) {
 function handleinfoSoftwareVersionCharacteristicChanged(event) {
   SoftwareVersion = Characteristics.info.softwareVersion.value.getUint8(0);
   console.log('Software Version = ' + SoftwareVersion);
-  if (initialCharacteristicRead) {
+  if (InitialCharacteristicRead) {
     Characteristics.info.globalDivider.readValue()
       .catch(error => {
         console.warn('Argh! ' + error);
         console.warn(`Fail while infoGlobalDividerCharacteristic.readValue()`);
-        statusText_p.innerHTML = `Connection failed`;
-        bluetoothDevice.gatt.disconnect();
+        DomEl.p.statusText.innerHTML = `Connection failed`;
+        BluetoothDevice.gatt.disconnect();
         return;
       });
   }
@@ -1234,14 +1247,14 @@ function handleinfoSoftwareVersionCharacteristicChanged(event) {
 function handleinfoGlobalDividerCharacteristicChanged(event) {
   handleSetupCharacteristicChanged();
   console.log('Global frequency divider = ' + GlobalFrequencyDivider);
-  if (initialCharacteristicRead) {
+  if (InitialCharacteristicRead) {
     if (document.getElementById("inp_check_temperature").checked) {
       Characteristics.temp.data.startNotifications()
         .catch(error => {
           console.warn('Argh! ' + error);
           console.warn(`Fail while temperatureDataCharacteristic.startNotifications()`);
-          statusText_p.innerHTML = `Connection failed`;
-          bluetoothDevice.gatt.disconnect();
+          DomEl.p.statusText.innerHTML = `Connection failed`;
+          BluetoothDevice.gatt.disconnect();
           return;
         });
     }
@@ -1250,8 +1263,8 @@ function handleinfoGlobalDividerCharacteristicChanged(event) {
         .catch(error => {
           console.warn('Argh! ' + error);
           console.warn(`Fail while dfuCharacteristic.startNotifications()`);
-          statusText_p.innerHTML = `Connection failed`;
-          bluetoothDevice.gatt.disconnect();
+          DomEl.p.statusText.innerHTML = `Connection failed`;
+          BluetoothDevice.gatt.disconnect();
           return;
         });
     }, 1000);
@@ -1270,7 +1283,7 @@ function handleinfoGlobalDividerCharacteristicChanged(event) {
     // }, 2000);
   }
 
-  initialCharacteristicRead = false;
+  InitialCharacteristicRead = false;
 }
 
 function dec2bin(dec) {
@@ -1335,13 +1348,13 @@ function handleSetupCharacteristicChanged() {
     ) {
       GlobalFrequencyDivider =
         Characteristics.info.globalDivider.value.getUint8(0);
-      accVauleDivider =
+      AccVauleDivider =
         Math.pow(
           2,
           Characteristics.acc.resolution.value.getUint8(0) - 1
         ) / AccRanges[Characteristics.acc.range.value.getUint8(0)];
 
-      smapleFrequencyTemp =
+      SmapleFrequencyTemp =
         SensorBaseFrequency /
         Characteristics.temp.divider.value.getUint16(0, true) /
         GlobalFrequencyDivider;
@@ -1383,8 +1396,8 @@ function handleSetupCharacteristicChanged() {
             GlobalFrequencyDivider),
         slider.min,
         slider.max,
-        temperatureFreqSlideMin,
-        temperatureFreqSlideMax
+        TemperatureFreqSlideMin,
+        TemperatureFreqSlideMax
       );
       console.log(
         "Temperature frequency divider = " +
@@ -1430,22 +1443,22 @@ function handleSetupCharacteristicChanged() {
         " Axis: " +
         PossibleAxis[Characteristics.acc.axis.value.getUint8(0)];
       valueString +=
-        " Temperature: " + Number(smapleFrequencyTemp).toFixed(2) + `Hz`;
+        " Temperature: " + Number(SmapleFrequencyTemp).toFixed(2) + `Hz`;
 
-      temperature_time_divider = 60 * smapleFrequencyTemp;
+      Temperature_time_divider = 60 * SmapleFrequencyTemp;
 
       document.getElementById("setupInfoText").innerHTML = valueString;
 
-      smapleFrequencyAcc =
+      SmapleFrequencyAcc =
         SensorBaseFrequency /
         GlobalFrequencyDivider /
         Characteristics.acc.divider.value.getUint8(0);
-      displayFrequencyrange = smapleFrequencyAcc / 2;
+      DisplayFrequencyrange = SmapleFrequencyAcc / 2;
 
-      accChart.data.datasets[0].data = accChart.data.datasets[0].data.map(
+      AccChart.data.datasets[0].data = AccChart.data.datasets[0].data.map(
         (entry, index) => {
           return {
-            x: index * (displayFrequencyrange / (fftLength / 2 - 1)),
+            x: index * (DisplayFrequencyrange / (FftLength / 2 - 1)),
             y: entry.y,
           };
         }
@@ -1505,7 +1518,7 @@ function accelerometerFreqSlide() {
 function temperatureFreqSlide() {
   let slider = document.getElementById("inp_sli_temperatureDivider");
   let inputNumTempFreq = document.getElementById("inp_num_temperatureDivider");
-  inputNumTempFreq.innerHTML = Math.round(mapLinearToLog(slider.value, slider.min, slider.max, temperatureFreqSlideMin, temperatureFreqSlideMax) * 100) / 100 + ' Hz';
+  inputNumTempFreq.innerHTML = Math.round(mapLinearToLog(slider.value, slider.min, slider.max, TemperatureFreqSlideMin, TemperatureFreqSlideMax) * 100) / 100 + ' Hz';
 }
 
 function voltageFreqSlide() {
@@ -1519,7 +1532,7 @@ function accelerometerFreqNumber() {
 function temperatureFreqNumber() {
   let slider = document.getElementById("inp_sli_temperatureDivider");
   let inputNumTempFreq = document.getElementById("inp_num_temperatureDivider");
-  slider.value = mapLogToLinear(inputNumTempFreq.value, slider.min, slider.max, temperatureFreqSlideMin, temperatureFreqSlideMax);
+  slider.value = mapLogToLinear(inputNumTempFreq.value, slider.min, slider.max, TemperatureFreqSlideMin, TemperatureFreqSlideMax);
 }
 
 function voltageFreqNumber() {
@@ -1589,12 +1602,12 @@ function initAccChart() {
     xAxesTicksStepSize = PossibleAxisLimits[xLimitStored] / 20;
   }
 
-  accChart = new Chart(document.getElementById('accChart').getContext('2d'), {
+  AccChart = new Chart(document.getElementById('accChart').getContext('2d'), {
     type: 'line',
     data: {
       datasets: [{
         label: 'accData',
-        data: accChartData,
+        data: AccChartData,
         backgroundColor: 'rgb(255, 255, 255)',
         borderColor: 'rgb(255, 255, 255)',
         fill: false,
@@ -1616,8 +1629,8 @@ function initAccChart() {
       title: {
         display: true,
         text: 'Acceleration',
-        fontSize: titleFontSize,
-        fontColor: chartFontColor,
+        fontSize: TitleFontSize,
+        fontColor: ChartFontColor,
       },
       legend: {
         display: false,
@@ -1635,15 +1648,15 @@ function initAccChart() {
           scaleLabel: {
             display: true,
             labelString: 'Frequency in Hz',
-            fontSize: axisFontSize,
-            fontColor: chartFontColor,
+            fontSize: AxisFontSize,
+            fontColor: ChartFontColor,
           },
           ticks: {
-            fontSize: axisTickFontSize,
+            fontSize: AxisTickFontSize,
             beginAtZero: true,
             stepSize: xAxesTicksStepSize,
             max: xAxesTicksMax,
-            fontColor: chartFontColor,
+            fontColor: ChartFontColor,
           }
         }],
         yAxes: [{
@@ -1651,13 +1664,13 @@ function initAccChart() {
           scaleLabel: {
             display: true,
             labelString: 'Normalized amplitude',
-            fontSize: axisFontSize,
-            fontColor: chartFontColor,
+            fontSize: AxisFontSize,
+            fontColor: ChartFontColor,
           },
           ticks: {
-            fontSize: axisTickFontSize,
+            fontSize: AxisTickFontSize,
             beginAtZero: true,
-            fontColor: chartFontColor,
+            fontColor: ChartFontColor,
           },
         }],
       },
@@ -1706,7 +1719,7 @@ function initAccChart() {
 }
 
 function initTempChart() {
-  tempChart = new Chart(document.getElementById('tempChart').getContext('2d'), {
+  TempChart = new Chart(document.getElementById('tempChart').getContext('2d'), {
     type: 'line',
     data: {
       datasets: [{
@@ -1733,13 +1746,13 @@ function initTempChart() {
       title: {
         display: true,
         text: 'Temperature',
-        fontSize: titleFontSize,
-        fontColor: chartFontColor,
+        fontSize: TitleFontSize,
+        fontColor: ChartFontColor,
       },
       legend: {
         display: false,
         labels: {
-          fontColor: chartFontColor,
+          fontColor: ChartFontColor,
           // fontSize: 18
         }
       },
@@ -1756,17 +1769,17 @@ function initTempChart() {
           scaleLabel: {
             display: true,
             labelString: 'time in m',
-            fontSize: axisFontSize,
-            fontColor: chartFontColor,
+            fontSize: AxisFontSize,
+            fontColor: ChartFontColor,
           },
           ticks: {
-            fontSize: axisTickFontSize,
+            fontSize: AxisTickFontSize,
             // beginAtZero: true,
             stepSize: 0.1,
             min: 0,
             max: TEMP_TIME_WINDOW,
             maxTicksLimit: 11,
-            fontColor: chartFontColor,
+            fontColor: ChartFontColor,
           }
         }],
         yAxes: [{
@@ -1774,14 +1787,14 @@ function initTempChart() {
           scaleLabel: {
             display: true,
             labelString: 'Temperature in °C',
-            fontSize: axisFontSize,
-            fontColor: chartFontColor,
+            fontSize: AxisFontSize,
+            fontColor: ChartFontColor,
           },
           ticks: {
-            fontSize: axisTickFontSize,
+            fontSize: AxisTickFontSize,
             min: 20,
             max: 30,
-            fontColor: chartFontColor,
+            fontColor: ChartFontColor,
           }
         }],
       },
