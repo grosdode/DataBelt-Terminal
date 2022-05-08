@@ -7,10 +7,29 @@
     "start": "electron .",
     "build": "electron-builder"
   },
+
+  "build": {
+    "appId": "data_belt",
+    "win": {
+      "target": [
+        "nsis"
+      ],
+      "icon": "icon.ico"
+    },
+    "nsis":{
+      "oneClick": false,
+      "installerIcon": "icon.ico",
+      "uninstallDisplayName": "DataBlet-Uninstaller",
+      "license": "LICENSE",
+      "allowToChangeInstallationDirectory": true
+    }
+  },
+
   "keywords": [],
   "author": "Dominik G.",
   "license": "MIT",
   "devDependencies": {
-    "electron": "^18.2.0"
+    "electron": "^18.2.0",
+    "electron-builder": "^23.0.3"
   }
 }
