@@ -585,8 +585,206 @@ function switchToDFUMode() {
   Characteristics.dfu.dfu.writeValue(DfuCommand);
 }
 
-function connectingToBLEDevice(device) {
-  
+function connectingToBLEDevice(device) { // have to be a promise
+  console.log("Connecting to GATT Server...");
+  DomEl.p.statusText.innerHTML = `Connecting to GATT Server`;
+  BluetoothDevice = device;
+  BluetoothDevice.addEventListener("gattserverdisconnected", onDisconnected);
+  return device.gatt.connect();
+}
+
+function readBLEServices(server) {
+  console.log("Getting Services...");
+  DomEl.p.statusText.innerHTML = `Getting Services`;
+  return server.getPrimaryServices();
+}
+
+function readBLECharacteristics(services) {
+  console.log("Getting Characteristics...");
+  DomEl.p.statusText.innerHTML = `Getting Characteristics`;
+  let queue = Promise.resolve();
+  console.log("services: ", services);
+  services.forEach((service) => {
+    queue = queue.then((_) =>
+      service.getCharacteristics().then((characteristics) => {
+        if (service.uuid === UUIDs.acc.service) {
+          characteristics.forEach((characteristic) => {
+            if (characteristic.uuid === UUIDs.acc.characteristics.filter) {
+              Characteristics.acc.filter = characteristic;
+              Characteristics.acc.filter.addEventListener(
+                "characteristicvaluechanged",
+                handleAccelerometerFilterCharacteristicChanged
+              );
+              setTimeout(() => {
+                Characteristics.acc.filter.readValue().catch((error) => {
+                  console.warn("Fail: " + error);
+                  console.warn(
+                    `Fail while characteristics.acc.filter.readValue()`
+                  );
+                  DomEl.p.statusText.innerHTML = `Connection failed`;
+                  disconnetDiviceClean();
+                  return;
+                });
+              }, 200);
+            } else if (
+              characteristic.uuid === UUIDs.acc.characteristics.lpFilter
+            ) {
+              Characteristics.acc.lpFilter = characteristic;
+              Characteristics.acc.lpFilter.addEventListener(
+                "characteristicvaluechanged",
+                handleAccelerometerLpFilterCharacteristicChanged
+              );
+            } else if (
+              characteristic.uuid === UUIDs.acc.characteristics.range
+            ) {
+              Characteristics.acc.range = characteristic;
+              Characteristics.acc.range.addEventListener(
+                "characteristicvaluechanged",
+                handleaccelerometerRangeCharacteristicChanged
+              );
+            } else if (
+              characteristic.uuid === UUIDs.acc.characteristics.divider
+            ) {
+              Characteristics.acc.divider = characteristic;
+              Characteristics.acc.divider.addEventListener(
+                "characteristicvaluechanged",
+                handleaccelerometerDividerCharacteristicChanged
+              );
+            } else if (characteristic.uuid === UUIDs.acc.characteristics.axis) {
+              Characteristics.acc.axis = characteristic;
+              Characteristics.acc.axis.addEventListener(
+                "characteristicvaluechanged",
+                handleaccelerometerAxisCharacteristicChanged
+              );
+            } else if (characteristic.uuid === UUIDs.acc.characteristics.data) {
+              Characteristics.acc.data = characteristic;
+              Characteristics.acc.data.addEventListener(
+                "characteristicvaluechanged",
+                handleaccelerometerDataCharacteristicChanged
+              );
+              if (document.getElementById("inp_check_accelerometer").checked) {
+                Characteristics.acc.data.startNotifications().catch((error) => {
+                  console.warn("Fail: " + error);
+                  console.warn(
+                    `Fail while accelerometerDataCharacteristic.startNotifications()`
+                  );
+                  DomEl.p.statusText.innerHTML = `Connection failed`;
+                  disconnetDiviceClean();
+                  return;
+                });
+              }
+            } else if (characteristic.uuid === UUIDs.acc.characteristics.type) {
+              Characteristics.acc.type = characteristic;
+              Characteristics.acc.type.addEventListener(
+                "characteristicvaluechanged",
+                handleaccelerometerTypeCharacteristicChanged
+              );
+            } else if (
+              characteristic.uuid === UUIDs.acc.characteristics.resolution
+            ) {
+              Characteristics.acc.resolution = characteristic;
+              Characteristics.acc.resolution.addEventListener(
+                "characteristicvaluechanged",
+                handleaccelerometerResolutionCharacteristicChanged
+              );
+            } else if (characteristic.uuid === UUIDs.acc.characteristics.bin) {
+              Characteristics.acc.bin = characteristic;
+              Characteristics.acc.bin.addEventListener(
+                "characteristicvaluechanged",
+                handleaccelerometerBinCharacteristicChanged
+              );
+            }
+          });
+        } else if (service.uuid === UUIDs.temp.service) {
+          characteristics.forEach((characteristic) => {
+            if (characteristic.uuid === UUIDs.temp.characteristics.divider) {
+              Characteristics.temp.divider = characteristic;
+              Characteristics.temp.divider.addEventListener(
+                "characteristicvaluechanged",
+                handletemperatureDividerCharacteristicChanged
+              );
+            } else if (
+              characteristic.uuid === UUIDs.temp.characteristics.data
+            ) {
+              Characteristics.temp.data = characteristic;
+              Characteristics.temp.data.addEventListener(
+                "characteristicvaluechanged",
+                handletemperatureDataCharacteristicChanged
+              );
+            }
+          });
+        } else if (service.uuid === UUIDs.volt.service) {
+          characteristics.forEach((characteristic) => {
+            if (characteristic.uuid === UUIDs.volt.characteristics.divider) {
+              Characteristics.voltage.divider = characteristic;
+              Characteristics.voltage.divider.addEventListener(
+                "characteristicvaluechanged",
+                handlevoltageDividerCharacteristicChanged
+              );
+            } else if (
+              characteristic.uuid === UUIDs.volt.characteristics.data
+            ) {
+              Characteristics.voltage.data = characteristic;
+              Characteristics.voltage.data.addEventListener(
+                "characteristicvaluechanged",
+                handlevoltageDataCharacteristicChanged
+              );
+            }
+          });
+        } else if (service.uuid === UUIDs.info.service) {
+          characteristics.forEach((characteristic) => {
+            if (
+              characteristic.uuid === UUIDs.info.characteristics.hardwareVersion
+            ) {
+              Characteristics.info.hardwareVersion = characteristic;
+              Characteristics.info.hardwareVersion.addEventListener(
+                "characteristicvaluechanged",
+                handleinfoHardwareVersionCharacteristicChanged
+              );
+            } else if (
+              characteristic.uuid === UUIDs.info.characteristics.softwareVersion
+            ) {
+              Characteristics.info.softwareVersion = characteristic;
+              Characteristics.info.softwareVersion.addEventListener(
+                "characteristicvaluechanged",
+                handleinfoSoftwareVersionCharacteristicChanged
+              );
+            } else if (
+              characteristic.uuid === UUIDs.info.characteristics.globalDivider
+            ) {
+              Characteristics.info.globalDivider = characteristic;
+              Characteristics.info.globalDivider.addEventListener(
+                "characteristicvaluechanged",
+                handleinfoGlobalDividerCharacteristicChanged
+              );
+            }
+          });
+        } else if (service.uuid === UUIDs.dfu.service) {
+          characteristics.forEach((characteristic) => {
+            if (characteristic.uuid === UUIDs.dfu.characteristics.dfu) {
+              Characteristics.dfu.dfu = characteristic;
+              Characteristics.dfu.dfu.addEventListener(
+                "characteristicvaluechanged",
+                handledfuCharacteristicChanged
+              );
+              // dfuCharacteristic.startNotifications()
+              //   .catch(error => {
+              //     console.warn('Fail: ' + error);
+              //     console.warn(`Fail while dfuCharacteristic.startNotifications()`);
+              //     statusText_p.innerHTML = `Connection failed`;
+              //     bluetoothDevice.gatt.disconnect();
+              //     return;
+              //   });
+            }
+          });
+        }
+        IsConnected = true;
+        draw();
+        DomEl.p.statusText.innerHTML = `Connection complete`;
+      })
+    );
+  });
+  return queue;
 }
 
 function onButtonClick() {
@@ -614,182 +812,32 @@ function onButtonClick() {
   DomEl.p.statusText.innerHTML = `Scanning for Bluetooth Device`;
   navigator.bluetooth.requestDevice(options)
     .then(device => {
-      console.log('Connecting to GATT Server...');
-      DomEl.p.statusText.innerHTML = `Connecting to GATT Server`;
-      BluetoothDevice = device;
-      BluetoothDevice.addEventListener('gattserverdisconnected', onDisconnected);
-      return device.gatt.connect();
+      return connectingToBLEDevice(device);
     })
     .then(server => {
-      console.log('Getting Services...');
-      DomEl.p.statusText.innerHTML = `Getting Services`;
-      return server.getPrimaryServices();
+      return readBLEServices(server);
     })
     .then(services => {
-      console.log('Getting Characteristics...');
-      DomEl.p.statusText.innerHTML = `Getting Characteristics`;
-      let queue = Promise.resolve();
-      console.log('services: ', services);
-      services.forEach(service => {
-        queue = queue.then(_ => service.getCharacteristics().then(characteristics => {
-          if (service.uuid === UUIDs.acc.service) {
-            characteristics.forEach(characteristic => {
-              if (characteristic.uuid === UUIDs.acc.characteristics.filter) {
-                Characteristics.acc.filter = characteristic;
-                Characteristics.acc.filter.addEventListener('characteristicvaluechanged',
-                  handleAccelerometerFilterCharacteristicChanged);
-                setTimeout(() => {
-                  Characteristics.acc.filter.readValue()
-                    .catch(error => {
-                      console.warn('Fail: ' + error);
-                      console.warn(`Fail while characteristics.acc.filter.readValue()`);
-                      DomEl.p.statusText.innerHTML = `Connection failed`;
-                      disconnetDiviceClean();
-                      return;
-                    });
-                }, 200);
-              } else if (characteristic.uuid === UUIDs.acc.characteristics.lpFilter) {
-                Characteristics.acc.lpFilter = characteristic;
-                Characteristics.acc.lpFilter.addEventListener(
-                  "characteristicvaluechanged",
-                  handleAccelerometerLpFilterCharacteristicChanged
-                );
-              } else if (characteristic.uuid === UUIDs.acc.characteristics.range) {
-                Characteristics.acc.range = characteristic;
-                Characteristics.acc.range.addEventListener('characteristicvaluechanged',
-                  handleaccelerometerRangeCharacteristicChanged);
-              } else if (characteristic.uuid === UUIDs.acc.characteristics.divider) {
-                Characteristics.acc.divider = characteristic;
-                Characteristics.acc.divider.addEventListener('characteristicvaluechanged',
-                  handleaccelerometerDividerCharacteristicChanged);
-              } else if (characteristic.uuid === UUIDs.acc.characteristics.axis) {
-                Characteristics.acc.axis = characteristic;
-                Characteristics.acc.axis.addEventListener('characteristicvaluechanged',
-                  handleaccelerometerAxisCharacteristicChanged);
-              } else if (characteristic.uuid === UUIDs.acc.characteristics.data) {
-                Characteristics.acc.data = characteristic;
-                Characteristics.acc.data.addEventListener('characteristicvaluechanged',
-                  handleaccelerometerDataCharacteristicChanged);
-                if (document.getElementById("inp_check_accelerometer").checked) {
-                  Characteristics.acc.data.startNotifications()
-                    .catch(error => {
-                      console.warn('Fail: ' + error);
-                      console.warn(`Fail while accelerometerDataCharacteristic.startNotifications()`);
-                      DomEl.p.statusText.innerHTML = `Connection failed`;
-                      disconnetDiviceClean();
-                      return;
-                    });
-                }
-              } else if (characteristic.uuid === UUIDs.acc.characteristics.type) {
-                Characteristics.acc.type = characteristic;
-                Characteristics.acc.type.addEventListener('characteristicvaluechanged',
-                  handleaccelerometerTypeCharacteristicChanged);
-              } else if (characteristic.uuid === UUIDs.acc.characteristics.resolution) {
-                Characteristics.acc.resolution = characteristic;
-                Characteristics.acc.resolution.addEventListener('characteristicvaluechanged',
-                  handleaccelerometerResolutionCharacteristicChanged);
-              } else if (characteristic.uuid === UUIDs.acc.characteristics.bin) {
-                Characteristics.acc.bin = characteristic;
-                Characteristics.acc.bin.addEventListener('characteristicvaluechanged',
-                  handleaccelerometerBinCharacteristicChanged);
-              }
-            });
-          }
-          else if (service.uuid === UUIDs.temp.service) {
-            characteristics.forEach((characteristic) => {
-              if (
-                characteristic.uuid === UUIDs.temp.characteristics.divider
-              ) {
-                Characteristics.temp.divider = characteristic;
-                Characteristics.temp.divider.addEventListener(
-                  "characteristicvaluechanged",
-                  handletemperatureDividerCharacteristicChanged
-                );
-              } else if (
-                characteristic.uuid === UUIDs.temp.characteristics.data
-              ) {
-                Characteristics.temp.data = characteristic;
-                Characteristics.temp.data.addEventListener(
-                  "characteristicvaluechanged",
-                  handletemperatureDataCharacteristicChanged
-                );
-              }
-            });
-          } else if (service.uuid === UUIDs.volt.service) {
-            characteristics.forEach((characteristic) => {
-              if (characteristic.uuid === UUIDs.volt.characteristics.divider) {
-                Characteristics.voltage.divider = characteristic;
-                Characteristics.voltage.divider.addEventListener(
-                  "characteristicvaluechanged",
-                  handlevoltageDividerCharacteristicChanged
-                );
-              } else if (
-                characteristic.uuid === UUIDs.volt.characteristics.data
-              ) {
-                Characteristics.voltage.data = characteristic;
-                Characteristics.voltage.data.addEventListener(
-                  "characteristicvaluechanged",
-                  handlevoltageDataCharacteristicChanged
-                );
-              }
-            });
-          } else if (service.uuid === UUIDs.info.service) {
-            characteristics.forEach((characteristic) => {
-              if (
-                characteristic.uuid === UUIDs.info.characteristics.hardwareVersion
-              ) {
-                Characteristics.info.hardwareVersion = characteristic;
-                Characteristics.info.hardwareVersion.addEventListener(
-                  "characteristicvaluechanged",
-                  handleinfoHardwareVersionCharacteristicChanged
-                );
-              } else if (
-                characteristic.uuid === UUIDs.info.characteristics.softwareVersion
-              ) {
-                Characteristics.info.softwareVersion = characteristic;
-                Characteristics.info.softwareVersion.addEventListener(
-                  "characteristicvaluechanged",
-                  handleinfoSoftwareVersionCharacteristicChanged
-                );
-              } else if (
-                characteristic.uuid === UUIDs.info.characteristics.globalDivider
-              ) {
-                Characteristics.info.globalDivider = characteristic;
-                Characteristics.info.globalDivider.addEventListener(
-                  "characteristicvaluechanged",
-                  handleinfoGlobalDividerCharacteristicChanged
-                );
-              }
-            });
-          } else if (service.uuid === UUIDs.dfu.service) {
-            characteristics.forEach((characteristic) => {
-              if (characteristic.uuid === UUIDs.dfu.characteristics.dfu) {
-                Characteristics.dfu.dfu = characteristic;
-                Characteristics.dfu.dfu.addEventListener(
-                  "characteristicvaluechanged",
-                  handledfuCharacteristicChanged
-                );
-                // dfuCharacteristic.startNotifications()
-                //   .catch(error => {
-                //     console.warn('Fail: ' + error);
-                //     console.warn(`Fail while dfuCharacteristic.startNotifications()`);
-                //     statusText_p.innerHTML = `Connection failed`;
-                //     bluetoothDevice.gatt.disconnect();
-                //     return;
-                //   });
-              }
-            });
-          }
-          IsConnected = true;
-          draw();
-          DomEl.p.statusText.innerHTML = `Connection complete`;
-        }));
-      });
-      return queue;
+      return readBLECharacteristics(services);
     })
     .catch(error => {
       console.warn('Fail: ' + error);
-      DomEl.p.statusText.innerHTML = error;
+      DomEl.p.statusText.innerHTML = "Connection failed";
+      draw();
+    });
+}
+
+function reconnect(device) {
+  connectingToBLEDevice(device)
+    .then((server) => {
+      return readBLEServices(server);
+    })
+    .then((services) => {
+      return readBLECharacteristics(services);
+    })
+    .catch((error) => {
+      console.warn("Fail: " + error);
+      DomEl.p.statusText.innerHTML = "Reconnection failed";
       draw();
     });
 }
@@ -827,8 +875,11 @@ function onDisconnected(event) {
   IsConnected = false;
   logging(true);
   draw();
-  // if (!ShouldDisconnect) 
-  //   reconnect();
+  if (!ShouldDisconnect && BluetoothDevice) 
+  {
+    console.log("try to reconnect");
+    reconnect(BluetoothDevice);
+  }
 }
 
 function convert12to16int(value)
