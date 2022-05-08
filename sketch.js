@@ -61,57 +61,35 @@ const temperatureFreqSlideMax = 100;
 let isConnected = false;
 let bluetoothDevice;
 
-let characteristics = {
+let Characteristics = {
   acc: {
-    filter: null,
-    lpFilter: null,
-    range: null,
-    divider: null,
-    axis: null,
-    data: null,
-    type: null,
-    resolution: null,
-    bin: null,
+    filter: {},
+    lpFilter: {},
+    range: {},
+    divider: {},
+    axis: {},
+    data: {},
+    type: {},
+    resolution: {},
+    bin: {},
   },
   temp: {
-    divider: null,
-    data: null,
+    divider: {},
+    data: {},
   },
   voltage: {
-    divider: null,
-    data: null,
+    divider: {},
+    data: {},
   },
   info: {
-    hardwareVersion: null,
-    softwareVersion: null,
-    globalDivider: null,
+    hardwareVersion: {},
+    softwareVersion: {},
+    globalDivider: {},
   },
   dfu: {
-    dfu: null
+    dfu: {}
   }
 };
-
-let accelerometerFilterCharacteristic;
-let accelerometerLpFilterCharacteristic;
-let accelerometerRangeCharacteristic;
-let accelerometerDividerCharacteristic;
-let accelerometerAxisCharacteristic;
-let accelerometerDataCharacteristic;
-let accelerometerTypeCharacteristic;
-let accelerometerResolutionCharacteristic;
-let accelerometerBinCharacteristic;
-
-let temperatureDividerCharacteristic;
-let temperatureDataCharacteristic;
-
-let voltageDividerCharacteristic;
-let voltageDataCharacteristic;
-
-let infoHardwareVersionCharacteristic;
-let infoSoftwareVersionCharacteristic;
-let infoGlobalDividerCharacteristic;
-
-let dfuCharacteristic;
 
 let HardwareVersion = -1;
 let SoftwareVersion = -1;
@@ -243,9 +221,9 @@ function setup() {
       axisLimitDropdownContent.style.display = "none";
       document.getElementById("img_axis_limit").addEventListener('click', showAxisLimitDropdownContent);
       setupTempDropdownContent(TempSampling);
-      HPVDropdownContent.addEventListener('click', (param) => updateChar8Bit(accelerometerFilterCharacteristic, param.target.id.replace(/\D/g, '')));
-      rangeDropdownContent.addEventListener('click', (param) => updateChar8Bit(accelerometerRangeCharacteristic, param.target.id.replace(/\D/g, '')));
-      axisDropdownContent.addEventListener('click', (param) => updateChar8Bit(accelerometerAxisCharacteristic, param.target.id.replace(/\D/g, '')));
+      HPVDropdownContent.addEventListener('click', (param) => updateChar8Bit(Characteristics.acc.filter, param.target.id.replace(/\D/g, '')));
+      rangeDropdownContent.addEventListener('click', (param) => updateChar8Bit(Characteristics.acc.range, param.target.id.replace(/\D/g, '')));
+      axisDropdownContent.addEventListener('click', (param) => updateChar8Bit(Characteristics.acc.axis, param.target.id.replace(/\D/g, '')));
       axisLimitDropdownContent.addEventListener('click', (param) => setXAxisLimit(param.target.id.replace(/\D/g, '')));
       tempDropdownContent.addEventListener('click', (param) => updateTemperatureChar(param.target.id.replace(/\D/g, '')));
     }
@@ -297,17 +275,17 @@ window.api.receive("documentCreated", (data) => {
     deactivateSettings();
 
     HP_Filter =
-      ADXL372accFilters[accelerometerFilterCharacteristic.value.getUint8(0)];
+      ADXL372accFilters[Characteristics.acc.filter.value.getUint8(0)];
     LP_Filter =
       ADXL372accLpFilters[
-        accelerometerLpFilterCharacteristic.value.getUint8(0)
+        Characteristics.acc.lpFilter.value.getUint8(0)
       ];
-    Range = AccRanges[accelerometerRangeCharacteristic.value.getUint8(0)];
-    Axis = PossibleAxis[accelerometerAxisCharacteristic.value.getUint8(0)];
+    Range = AccRanges[Characteristics.acc.range.value.getUint8(0)];
+    Axis = PossibleAxis[Characteristics.acc.axis.value.getUint8(0)];
     smapleFrequencyAcc =
       SensorBaseFrequency /
       GlobalFrequencyDivider /
-      accelerometerDividerCharacteristic.value.getUint8(0);
+      Characteristics.acc.divider.value.getUint8(0);
 
     let headerACC =
       `log file of Accelerometer;Sample Frequenzy:;` +
@@ -325,13 +303,13 @@ window.api.receive("documentCreated", (data) => {
 
     let subHeaderAcc;
     if (SoftwareVersion >= 3) {
-      if (accelerometerAxisCharacteristic.value.getUint8(0) >= 1) {
+      if (Characteristics.acc.axis.value.getUint8(0) >= 1) {
         subHeaderAcc = Axis + `;Mag;Stamp`;
       } else {
         subHeaderAcc = `x;y;z;Mag;Stamp`;
       }
     } else {
-      if (accelerometerAxisCharacteristic.value.getUint8(0) >= 1) {
+      if (Characteristics.acc.axis.value.getUint8(0) >= 1) {
         subHeaderAcc = Axis + `;Stamp`;
       } else {
         subHeaderAcc = `x;y;z;Stamp`;
@@ -345,7 +323,7 @@ window.api.receive("documentCreated", (data) => {
       `log file of Temperature Sonsor;Sample Frequenzy:;` +
       SensorBaseFrequency +
       `/` +
-      temperatureDividerCharacteristic.value.getUint16(0, true) *
+      Characteristics.temp.divider.value.getUint16(0, true) *
         GlobalFrequencyDivider +
       `;Hz`;
     let subHeaderTemp = `value;Stamp`;
@@ -389,7 +367,7 @@ function updateTemperatureChar(newvalueIndex) {
   let newFrequency = parseFloat(TempSampling[parseInt(newvalueIndex)]);
   let newDivider = SensorBaseFrequency / (GlobalFrequencyDivider * newFrequency);
   newDivider = Math.round(newDivider);
-  updateChar16Bit(temperatureDividerCharacteristic, newDivider);
+  updateChar16Bit(Characteristics.temp.divider, newDivider);
 }
 /************************************************************************/
 // dropdown
@@ -569,13 +547,13 @@ function draw() {
 function uploadSettingsToSensor() {
   let accelerometerDividerInputValue = Number(document.getElementById("inp_sli_accelerometerDivider").value);
   accelerometerDividerInputValue = Math.round(SensorBaseFrequency / (GlobalFrequencyDivider * accelerometerDividerInputValue));
-  updateChar16Bit(accelerometerDividerCharacteristic, accelerometerDividerInputValue);
+  updateChar16Bit(Characteristics.acc.divider, accelerometerDividerInputValue);
 
   let slider = document.getElementById("inp_sli_temperatureDivider");
   let temperatureDividerInputValue = mapLinearToLog(slider.value, slider.min, slider.max, temperatureFreqSlideMin, temperatureFreqSlideMax);
   temperatureDividerInputValue = Math.round(SensorBaseFrequency / (GlobalFrequencyDivider * temperatureDividerInputValue));
   setTimeout(() => {
-    updateChar16Bit(temperatureDividerCharacteristic, temperatureDividerInputValue);
+    updateChar16Bit(Characteristics.temp.divider, temperatureDividerInputValue);
   }, 1000);
 
   // let voltageDividerInputValue = Number(document.getElementById('inp_num_voltageDivider').value);
@@ -586,8 +564,8 @@ function uploadSettingsToSensor() {
 }
 
 function switchToDFUMode() {
-  console.log('dfuCharacteristic =' + dfuCharacteristic);
-  dfuCharacteristic.writeValue(dfuCommand);
+  console.log('dfuCharacteristic =' + Characteristics.dfu.dfu);
+  Characteristics.dfu.dfu.writeValue(dfuCommand);
 }
 
 function onButtonClick() {
@@ -635,41 +613,43 @@ function onButtonClick() {
           if (service.uuid === UUIDs.acc.service) {
             characteristics.forEach(characteristic => {
               if (characteristic.uuid === UUIDs.acc.characteristics.filter) {
-                accelerometerFilterCharacteristic = characteristic;
-                accelerometerFilterCharacteristic.addEventListener('characteristicvaluechanged',
+                Characteristics.acc.filter = characteristic;
+                Characteristics.acc.filter.addEventListener('characteristicvaluechanged',
                   handleAccelerometerFilterCharacteristicChanged);
                 setTimeout(() => {
-                  accelerometerFilterCharacteristic.readValue()
+                  Characteristics.acc.filter.readValue()
                     .catch(error => {
                       console.warn('Argh! ' + error);
-                      console.warn(`Fail while accelerometerFilterCharacteristic.readValue()`);
+                      console.warn(`Fail while characteristics.acc.filter.readValue()`);
                       statusText_p.innerHTML = `Connection failed`;
                       bluetoothDevice.gatt.disconnect();
                       return;
                     });
                 }, 200);
               } else if (characteristic.uuid === UUIDs.acc.characteristics.lpFilter) {
-                accelerometerLpFilterCharacteristic = characteristic;
-                accelerometerLpFilterCharacteristic.addEventListener('characteristicvaluechanged',
-                  handleAccelerometerLpFilterCharacteristicChanged);
+                Characteristics.acc.lpFilter = characteristic;
+                Characteristics.acc.lpFilter.addEventListener(
+                  "characteristicvaluechanged",
+                  handleAccelerometerLpFilterCharacteristicChanged
+                );
               } else if (characteristic.uuid === UUIDs.acc.characteristics.range) {
-                accelerometerRangeCharacteristic = characteristic;
-                accelerometerRangeCharacteristic.addEventListener('characteristicvaluechanged',
+                Characteristics.acc.range = characteristic;
+                Characteristics.acc.range.addEventListener('characteristicvaluechanged',
                   handleaccelerometerRangeCharacteristicChanged);
               } else if (characteristic.uuid === UUIDs.acc.characteristics.divider) {
-                accelerometerDividerCharacteristic = characteristic;
-                accelerometerDividerCharacteristic.addEventListener('characteristicvaluechanged',
+                Characteristics.acc.divider = characteristic;
+                Characteristics.acc.divider.addEventListener('characteristicvaluechanged',
                   handleaccelerometerDividerCharacteristicChanged);
               } else if (characteristic.uuid === UUIDs.acc.characteristics.axis) {
-                accelerometerAxisCharacteristic = characteristic;
-                accelerometerAxisCharacteristic.addEventListener('characteristicvaluechanged',
+                Characteristics.acc.axis = characteristic;
+                Characteristics.acc.axis.addEventListener('characteristicvaluechanged',
                   handleaccelerometerAxisCharacteristicChanged);
               } else if (characteristic.uuid === UUIDs.acc.characteristics.data) {
-                accelerometerDataCharacteristic = characteristic;
-                accelerometerDataCharacteristic.addEventListener('characteristicvaluechanged',
+                Characteristics.acc.data = characteristic;
+                Characteristics.acc.data.addEventListener('characteristicvaluechanged',
                   handleaccelerometerDataCharacteristicChanged);
                 if (document.getElementById("inp_check_accelerometer").checked) {
-                  accelerometerDataCharacteristic.startNotifications()
+                  Characteristics.acc.data.startNotifications()
                     .catch(error => {
                       console.warn('Argh! ' + error);
                       console.warn(`Fail while accelerometerDataCharacteristic.startNotifications()`);
@@ -679,16 +659,16 @@ function onButtonClick() {
                     });
                 }
               } else if (characteristic.uuid === UUIDs.acc.characteristics.type) {
-                accelerometerTypeCharacteristic = characteristic;
-                accelerometerTypeCharacteristic.addEventListener('characteristicvaluechanged',
+                Characteristics.acc.type = characteristic;
+                Characteristics.acc.type.addEventListener('characteristicvaluechanged',
                   handleaccelerometerTypeCharacteristicChanged);
               } else if (characteristic.uuid === UUIDs.acc.characteristics.resolution) {
-                accelerometerResolutionCharacteristic = characteristic;
-                accelerometerResolutionCharacteristic.addEventListener('characteristicvaluechanged',
+                Characteristics.acc.resolution = characteristic;
+                Characteristics.acc.resolution.addEventListener('characteristicvaluechanged',
                   handleaccelerometerResolutionCharacteristicChanged);
               } else if (characteristic.uuid === UUIDs.acc.characteristics.bin) {
-                accelerometerBinCharacteristic = characteristic;
-                accelerometerBinCharacteristic.addEventListener('characteristicvaluechanged',
+                Characteristics.acc.bin = characteristic;
+                Characteristics.acc.bin.addEventListener('characteristicvaluechanged',
                   handleaccelerometerBinCharacteristicChanged);
               }
             });
@@ -698,16 +678,16 @@ function onButtonClick() {
               if (
                 characteristic.uuid === UUIDs.temp.characteristics.divider
               ) {
-                temperatureDividerCharacteristic = characteristic;
-                temperatureDividerCharacteristic.addEventListener(
+                Characteristics.temp.divider = characteristic;
+                Characteristics.temp.divider.addEventListener(
                   "characteristicvaluechanged",
                   handletemperatureDividerCharacteristicChanged
                 );
               } else if (
                 characteristic.uuid === UUIDs.temp.characteristics.data
               ) {
-                temperatureDataCharacteristic = characteristic;
-                temperatureDataCharacteristic.addEventListener(
+                Characteristics.temp.data = characteristic;
+                Characteristics.temp.data.addEventListener(
                   "characteristicvaluechanged",
                   handletemperatureDataCharacteristicChanged
                 );
@@ -716,16 +696,16 @@ function onButtonClick() {
           } else if (service.uuid === UUIDs.volt.service) {
             characteristics.forEach((characteristic) => {
               if (characteristic.uuid === UUIDs.volt.characteristics.divider) {
-                voltageDividerCharacteristic = characteristic;
-                voltageDividerCharacteristic.addEventListener(
+                Characteristics.voltage.divider = characteristic;
+                Characteristics.voltage.divider.addEventListener(
                   "characteristicvaluechanged",
                   handlevoltageDividerCharacteristicChanged
                 );
               } else if (
                 characteristic.uuid === UUIDs.volt.characteristics.data
               ) {
-                voltageDataCharacteristic = characteristic;
-                voltageDataCharacteristic.addEventListener(
+                Characteristics.voltage.data = characteristic;
+                Characteristics.voltage.data.addEventListener(
                   "characteristicvaluechanged",
                   handlevoltageDataCharacteristicChanged
                 );
@@ -736,24 +716,24 @@ function onButtonClick() {
               if (
                 characteristic.uuid === UUIDs.info.characteristics.hardwareVersion
               ) {
-                infoHardwareVersionCharacteristic = characteristic;
-                infoHardwareVersionCharacteristic.addEventListener(
+                Characteristics.info.hardwareVersion = characteristic;
+                Characteristics.info.hardwareVersion.addEventListener(
                   "characteristicvaluechanged",
                   handleinfoHardwareVersionCharacteristicChanged
                 );
               } else if (
                 characteristic.uuid === UUIDs.info.characteristics.softwareVersion
               ) {
-                infoSoftwareVersionCharacteristic = characteristic;
-                infoSoftwareVersionCharacteristic.addEventListener(
+                Characteristics.info.softwareVersion = characteristic;
+                Characteristics.info.softwareVersion.addEventListener(
                   "characteristicvaluechanged",
                   handleinfoSoftwareVersionCharacteristicChanged
                 );
               } else if (
                 characteristic.uuid === UUIDs.info.characteristics.globalDivider
               ) {
-                infoGlobalDividerCharacteristic = characteristic;
-                infoGlobalDividerCharacteristic.addEventListener(
+                Characteristics.info.globalDivider = characteristic;
+                Characteristics.info.globalDivider.addEventListener(
                   "characteristicvaluechanged",
                   handleinfoGlobalDividerCharacteristicChanged
                 );
@@ -762,8 +742,8 @@ function onButtonClick() {
           } else if (service.uuid === UUIDs.dfu.service) {
             characteristics.forEach((characteristic) => {
               if (characteristic.uuid === UUIDs.dfu.characteristics.dfu) {
-                dfuCharacteristic = characteristic;
-                dfuCharacteristic.addEventListener(
+                Characteristics.dfu.dfu = characteristic;
+                Characteristics.dfu.dfu.addEventListener(
                   "characteristicvaluechanged",
                   handledfuCharacteristicChanged
                 );
@@ -1060,12 +1040,13 @@ function handletemperatureDataCharacteristicChanged(event) {
 
 function handleAccelerometerFilterCharacteristicChanged(event) {
   handleSetupCharacteristicChanged();
-  console.log('Accelerometer high pass filter = ' + ADXL372accFilters[accelerometerFilterCharacteristic.value.getUint8(0)] + ' Hz');
+  console.log('Accelerometer high pass filter = ' + ADXL372accFilters[Characteristics.acc.filter.value.getUint8(0)] + ' Hz');
   if (initialCharacteristicRead){
-    accelerometerLpFilterCharacteristic.readValue()
+    // accelerometerLpFilterCharacteristic.readValue()
+    Characteristics.acc.lpFilter.readValue()
       .catch(error => {
         console.warn('Argh! ' + error);
-        console.warn(`Fail while accelerometerLpFilterCharacteristic.readValue()`);
+        console.warn(`Fail while Characteristics.acc.lpFilter.readValue()`);
         statusText_p.innerHTML = `Connection failed`;
         bluetoothDevice.gatt.disconnect();
         return;
@@ -1075,12 +1056,12 @@ function handleAccelerometerFilterCharacteristicChanged(event) {
 
 function handleAccelerometerLpFilterCharacteristicChanged(event) {
   handleSetupCharacteristicChanged();
-  console.log('Accelerometer low pass filter = ' + ADXL372accLpFilters[accelerometerLpFilterCharacteristic.value.getUint8(0)] + ' Hz');
+  console.log('Accelerometer low pass filter = ' + ADXL372accLpFilters[Characteristics.acc.lpFilter.value.getUint8(0)] + ' Hz');
   if (initialCharacteristicRead) {
-    accelerometerRangeCharacteristic.readValue()
+    Characteristics.acc.range.readValue()
       .catch(error => {
         console.warn('Argh! ' + error);
-        console.warn(`Fail while accelerometerRangeCharacteristic.readValue()`);
+        console.warn(`Fail while Characteristics.acc.range.readValue()`);
         statusText_p.innerHTML = `Connection failed`;
         bluetoothDevice.gatt.disconnect();
         return;
@@ -1090,9 +1071,9 @@ function handleAccelerometerLpFilterCharacteristicChanged(event) {
 
 function handleaccelerometerRangeCharacteristicChanged(event) {
   handleSetupCharacteristicChanged();
-  console.log('Accelerometer range = ' + ADXL372Range[accelerometerRangeCharacteristic.value.getUint8(0)]);
+  console.log('Accelerometer range = ' + ADXL372Range[Characteristics.acc.range.value.getUint8(0)]);
   if (initialCharacteristicRead) {
-    accelerometerDividerCharacteristic.readValue()
+    Characteristics.acc.divider.readValue()
       .catch(error => {
         console.warn('Argh! ' + error);
         console.warn(`Fail while accelerometerDividerCharacteristic.readValue()`);
@@ -1106,7 +1087,7 @@ function handleaccelerometerRangeCharacteristicChanged(event) {
 function handleaccelerometerDividerCharacteristicChanged(event) {
   handleSetupCharacteristicChanged();
   if (initialCharacteristicRead) {
-    accelerometerAxisCharacteristic.readValue()
+    Characteristics.acc.axis.readValue()
       .catch(error => {
         console.warn('Argh! ' + error);
         console.warn(`Fail while accelerometerAxisCharacteristic.readValue()`);
@@ -1116,12 +1097,12 @@ function handleaccelerometerDividerCharacteristicChanged(event) {
       });
   }
   else{
-    if (typeof accelerometerLpFilterCharacteristic !== "undefined" &&
-      accelerometerLpFilterCharacteristic.value !== null) {
-      accelerometerLpFilterCharacteristic.readValue()
+    if (typeof Characteristics.acc.lpFilter !== "undefined" &&
+      Characteristics.acc.lpFilter.value !== null) {
+      Characteristics.acc.lpFilter.readValue()
         .catch(error => {
           console.warn('Argh! ' + error);
-          console.warn(`Fail while accelerometerLpFilterCharacteristic.readValue()`);
+          console.warn(`Fail while Characteristics.acc.lpFilter.readValue()`);
           statusText_p.innerHTML = `Connection failed`;
           bluetoothDevice.gatt.disconnect();
           return;
@@ -1132,9 +1113,9 @@ function handleaccelerometerDividerCharacteristicChanged(event) {
 
 function handleaccelerometerAxisCharacteristicChanged(event) {
   handleSetupCharacteristicChanged();
-  console.log('Accelerometer transmitting Axis = ' + PossibleAxis[accelerometerAxisCharacteristic.value.getUint8(0)]);
+  console.log('Accelerometer transmitting Axis = ' + PossibleAxis[Characteristics.acc.axis.value.getUint8(0)]);
   if (initialCharacteristicRead) {
-    accelerometerTypeCharacteristic.readValue()
+    Characteristics.acc.type.readValue()
       .catch(error => {
         console.warn('Argh! ' + error);
         console.warn(`Fail while accelerometerTypeCharacteristic.readValue()`);
@@ -1146,9 +1127,9 @@ function handleaccelerometerAxisCharacteristicChanged(event) {
 }
 
 function handleaccelerometerTypeCharacteristicChanged(event) {
-  console.log('Accelerometer Type = ' + usedAccelerometer[accelerometerTypeCharacteristic.value.getUint8(0)]);
+  console.log('Accelerometer Type = ' + usedAccelerometer[Characteristics.acc.type.value.getUint8(0)]);
   if (initialCharacteristicRead) {
-    accelerometerResolutionCharacteristic.readValue()
+    Characteristics.acc.resolution.readValue()
       .catch(error => {
         console.warn('Argh! ' + error);
         console.warn(`Fail while accelerometerResolutionCharacteristic.readValue()`);
@@ -1161,9 +1142,9 @@ function handleaccelerometerTypeCharacteristicChanged(event) {
 
 function handleaccelerometerResolutionCharacteristicChanged(event) {
   handleSetupCharacteristicChanged();
-  console.log('Accelerometer Resolution = ' + accelerometerResolutionCharacteristic.value.getUint8(0) + ' Bit');
+  console.log('Accelerometer Resolution = ' + Characteristics.acc.resolution.value.getUint8(0) + ' Bit');
   if (initialCharacteristicRead) {
-    accelerometerBinCharacteristic.readValue()
+    Characteristics.acc.bin.readValue()
       .catch(error => {
         console.warn('Argh! ' + error);
         console.warn(`Fail while accelerometerBinCharacteristic.readValue()`);
@@ -1175,9 +1156,9 @@ function handleaccelerometerResolutionCharacteristicChanged(event) {
 }
 
 function handleaccelerometerBinCharacteristicChanged(event) {
-  console.log('Accelerometer bin size = ' + accelerometerBinCharacteristic.value.getUint8(0) + ' values');
+  console.log('Accelerometer bin size = ' + Characteristics.acc.bin.value.getUint8(0) + ' values');
   if (initialCharacteristicRead) {
-    temperatureDividerCharacteristic.readValue()
+    Characteristics.temp.divider.readValue()
       .catch(error => {
         console.warn('Argh! ' + error);
         console.warn(`Fail while temperatureDividerCharacteristic.readValue()`);
@@ -1191,7 +1172,7 @@ function handleaccelerometerBinCharacteristicChanged(event) {
 function handletemperatureDividerCharacteristicChanged(event) {
   handleSetupCharacteristicChanged();
   if (initialCharacteristicRead) {
-    voltageDividerCharacteristic.readValue()
+    Characteristics.voltage.divider.readValue()
       .catch(error => {
         console.warn('Argh! ' + error);
         console.warn(`Fail while voltageDividerCharacteristic.readValue()`);
@@ -1205,7 +1186,7 @@ function handletemperatureDividerCharacteristicChanged(event) {
 function handlevoltageDividerCharacteristicChanged(event) {
   handleSetupCharacteristicChanged();
   if (initialCharacteristicRead) {
-    infoHardwareVersionCharacteristic.readValue()
+    Characteristics.info.hardwareVersion.readValue()
       .catch(error => {
         console.warn('Argh! ' + error);
         console.warn(`Fail while infoHardwareVersionCharacteristic.readValue()`);
@@ -1221,10 +1202,10 @@ function handlevoltageDataCharacteristicChanged(event) {
 }
 
 function handleinfoHardwareVersionCharacteristicChanged(event) {
-  HardwareVersion = infoHardwareVersionCharacteristic.value.getUint8(0);
+  HardwareVersion = Characteristics.info.hardwareVersion.value.getUint8(0);
   console.log('Hardware Version = ' + HardwareVersion);
   if (initialCharacteristicRead) {
-    infoSoftwareVersionCharacteristic.readValue()
+    Characteristics.info.softwareVersion.readValue()
       .catch(error => {
         console.warn('Argh! ' + error);
         console.warn(`Fail while infoSoftwareVersionCharacteristic.readValue()`);
@@ -1236,10 +1217,10 @@ function handleinfoHardwareVersionCharacteristicChanged(event) {
 }
 
 function handleinfoSoftwareVersionCharacteristicChanged(event) {
-  SoftwareVersion = infoSoftwareVersionCharacteristic.value.getUint8(0);
+  SoftwareVersion = Characteristics.info.softwareVersion.value.getUint8(0);
   console.log('Software Version = ' + SoftwareVersion);
   if (initialCharacteristicRead) {
-    infoGlobalDividerCharacteristic.readValue()
+    Characteristics.info.globalDivider.readValue()
       .catch(error => {
         console.warn('Argh! ' + error);
         console.warn(`Fail while infoGlobalDividerCharacteristic.readValue()`);
@@ -1255,7 +1236,7 @@ function handleinfoGlobalDividerCharacteristicChanged(event) {
   console.log('Global frequency divider = ' + GlobalFrequencyDivider);
   if (initialCharacteristicRead) {
     if (document.getElementById("inp_check_temperature").checked) {
-      temperatureDataCharacteristic.startNotifications()
+      Characteristics.temp.data.startNotifications()
         .catch(error => {
           console.warn('Argh! ' + error);
           console.warn(`Fail while temperatureDataCharacteristic.startNotifications()`);
@@ -1265,7 +1246,7 @@ function handleinfoGlobalDividerCharacteristicChanged(event) {
         });
     }
     setTimeout(() => {
-      dfuCharacteristic.startNotifications()
+      Characteristics.dfu.dfu.startNotifications()
         .catch(error => {
           console.warn('Argh! ' + error);
           console.warn(`Fail while dfuCharacteristic.startNotifications()`);
@@ -1297,11 +1278,11 @@ function dec2bin(dec) {
 }
 
 function handledfuCharacteristicChanged(event) {
-  let response = (dfuCharacteristic.value.getUint8(0) << 16) |
-    (dfuCharacteristic.value.getUint8(1) << 8) |
-    dfuCharacteristic.value.getUint8(2);
+  let response = (Characteristics.dfu.dfu.value.getUint8(0) << 16) |
+    (Characteristics.dfu.dfu.value.getUint8(1) << 8) |
+    Characteristics.dfu.dfu.value.getUint8(2);
   console.log('dfu response = 0x' + response.toString(16));
-  switch (dfuCharacteristic.value.getUint8(2)) {
+  switch (Characteristics.dfu.dfu.value.getUint8(2)) {
     case 0:
       console.log('Invalid code	The provided opcode was missing or malformed.');
       break;
@@ -1333,64 +1314,140 @@ function handleSetupCharacteristicChanged() {
   let valueString = ' ';
 
   if (
-    typeof infoGlobalDividerCharacteristic !== "undefined" &&
-    typeof accelerometerResolutionCharacteristic !== "undefined" &&
-    typeof accelerometerRangeCharacteristic !== "undefined" &&
-    typeof temperatureDividerCharacteristic !== "undefined" &&
-    typeof accelerometerFilterCharacteristic !== "undefined" &&
-    typeof accelerometerLpFilterCharacteristic !== "undefined" &&
-    typeof accelerometerAxisCharacteristic !== "undefined" &&
-    typeof accelerometerDividerCharacteristic !== "undefined"
+    typeof Characteristics.info.globalDivider !== "undefined" &&
+    typeof Characteristics.acc.resolution !== "undefined" &&
+    typeof Characteristics.acc.range !== "undefined" &&
+    typeof Characteristics.temp.divider !== "undefined" &&
+    typeof Characteristics.acc.filter !== "undefined" &&
+    typeof Characteristics.acc.lpFilter !== "undefined" &&
+    typeof Characteristics.acc.axis !== "undefined" &&
+    typeof Characteristics.acc.divider !== "undefined"
   ) {
     if (
-      infoGlobalDividerCharacteristic.value !== null &&
-      accelerometerResolutionCharacteristic.value !== null &&
-      accelerometerRangeCharacteristic.value !== null &&
-      temperatureDividerCharacteristic.value !== null &&
-      accelerometerFilterCharacteristic.value !== null &&
-      accelerometerLpFilterCharacteristic.value !== null &&
-      accelerometerAxisCharacteristic.value !== null &&
-      accelerometerDividerCharacteristic.value !== null) {
-      GlobalFrequencyDivider = infoGlobalDividerCharacteristic.value.getUint8(0);
-      accVauleDivider = Math.pow(2, (accelerometerResolutionCharacteristic.value.getUint8(0) - 1)) / AccRanges[accelerometerRangeCharacteristic.value.getUint8(0)];
+      Characteristics.info.globalDivider.value !== null &&
+      Characteristics.acc.resolution.value !== null &&
+      Characteristics.acc.range.value !== null &&
+      Characteristics.temp.divider.value !== null &&
+      Characteristics.acc.filter.value !== null &&
+      Characteristics.acc.lpFilter.value !== null &&
+      Characteristics.acc.axis.value !== null &&
+      Characteristics.acc.divider.value !== null
+    ) {
+      GlobalFrequencyDivider =
+        Characteristics.info.globalDivider.value.getUint8(0);
+      accVauleDivider =
+        Math.pow(
+          2,
+          Characteristics.acc.resolution.value.getUint8(0) - 1
+        ) / AccRanges[Characteristics.acc.range.value.getUint8(0)];
 
-      smapleFrequencyTemp = SensorBaseFrequency / temperatureDividerCharacteristic.value.getUint16(0, true) / GlobalFrequencyDivider;
-      
-      document.getElementById("inp_num_accelerometerDivider").innerHTML = SensorBaseFrequency / (accelerometerDividerCharacteristic.value.getUint16(0, true) * GlobalFrequencyDivider) + ' Hz';
-      document.getElementById("inp_sli_accelerometerDivider").value = SensorBaseFrequency / (accelerometerDividerCharacteristic.value.getUint16(0, true) * GlobalFrequencyDivider);
-      console.log('Accelerometer frequency divider = ' + accelerometerDividerCharacteristic.value.getUint16(0, true));
-      console.log('--> frequency = ' + SensorBaseFrequency / accelerometerDividerCharacteristic.value.getUint16(0, true) / GlobalFrequencyDivider + ' Hz');
+      smapleFrequencyTemp =
+        SensorBaseFrequency /
+        Characteristics.temp.divider.value.getUint16(0, true) /
+        GlobalFrequencyDivider;
 
-      document.getElementById("inp_num_temperatureDivider").innerHTML = Math.round((SensorBaseFrequency / temperatureDividerCharacteristic.value.getUint16(0, true) / GlobalFrequencyDivider) * 1000) / 1000 + ' Hz';
+      document.getElementById("inp_num_accelerometerDivider").innerHTML =
+        SensorBaseFrequency /
+          (Characteristics.acc.divider.value.getUint16(0, true) *
+            GlobalFrequencyDivider) +
+        " Hz";
+      document.getElementById("inp_sli_accelerometerDivider").value =
+        SensorBaseFrequency /
+        (Characteristics.acc.divider.value.getUint16(0, true) *
+          GlobalFrequencyDivider);
+      console.log(
+        "Accelerometer frequency divider = " +
+          Characteristics.acc.divider.value.getUint16(0, true)
+      );
+      console.log(
+        "--> frequency = " +
+          SensorBaseFrequency /
+            Characteristics.acc.divider.value.getUint16(0, true) /
+            GlobalFrequencyDivider +
+          " Hz"
+      );
+
+      document.getElementById("inp_num_temperatureDivider").innerHTML =
+        Math.round(
+          (SensorBaseFrequency /
+            Characteristics.temp.divider.value.getUint16(0, true) /
+            GlobalFrequencyDivider) *
+            1000
+        ) /
+          1000 +
+        " Hz";
       let slider = document.getElementById("inp_sli_temperatureDivider");
-      slider.value = mapLogToLinear(SensorBaseFrequency / (temperatureDividerCharacteristic.value.getUint16(0, true) * GlobalFrequencyDivider), slider.min, slider.max, temperatureFreqSlideMin, temperatureFreqSlideMax);
-      console.log('Temperature frequency divider = ' + temperatureDividerCharacteristic.value.getUint16(0, true));
-      console.log('--> frequency = ' + SensorBaseFrequency / temperatureDividerCharacteristic.value.getUint16(0, true) / GlobalFrequencyDivider + ' Hz');
+      slider.value = mapLogToLinear(
+        SensorBaseFrequency /
+          (Characteristics.temp.divider.value.getUint16(0, true) *
+            GlobalFrequencyDivider),
+        slider.min,
+        slider.max,
+        temperatureFreqSlideMin,
+        temperatureFreqSlideMax
+      );
+      console.log(
+        "Temperature frequency divider = " +
+          Characteristics.temp.divider.value.getUint16(0, true)
+      );
+      console.log(
+        "--> frequency = " +
+          SensorBaseFrequency /
+            Characteristics.temp.divider.value.getUint16(0, true) /
+            GlobalFrequencyDivider +
+          " Hz"
+      );
 
       // document.getElementById("inp_num_voltageDivider").value = SensorBaseFrequency / (voltageDividerCharacteristic.value.getUint16(0, true) * GlobalFrequencyDivider);
       voltageFreqNumber();
-      console.log('Voltage frequency divider = ' + voltageDividerCharacteristic.value.getUint16(0, true));
-      console.log('--> frequency = ' + SensorBaseFrequency / voltageDividerCharacteristic.value.getUint16(0, true) / GlobalFrequencyDivider + ' Hz');
+      console.log(
+        "Voltage frequency divider = " +
+          Characteristics.voltage.divider.value.getUint16(0, true)
+      );
+      console.log(
+        "--> frequency = " +
+          SensorBaseFrequency /
+            Characteristics.voltage.divider.value.getUint16(0, true) /
+            GlobalFrequencyDivider +
+          " Hz"
+      );
 
-      valueString += 'HP Filter: ' + ADXL372accFilters[accelerometerFilterCharacteristic.value.getUint8(0)] + 'Hz,';
-      valueString += 'LP Filter: ' + ADXL372accLpFilters[accelerometerLpFilterCharacteristic.value.getUint8(0)] + 'Hz,';
-      valueString += ' Range: +-' + AccRanges[accelerometerRangeCharacteristic.value.getUint8(0)] + 'g,';
-      valueString += ' Axis: ' + PossibleAxis[accelerometerAxisCharacteristic.value.getUint8(0)];
-      valueString += ' Temperature: ' + Number(smapleFrequencyTemp).toFixed(2) + `Hz`;
+      valueString +=
+        "HP Filter: " +
+        ADXL372accFilters[Characteristics.acc.filter.value.getUint8(0)] +
+        "Hz,";
+      valueString +=
+        "LP Filter: " +
+        ADXL372accLpFilters[
+          Characteristics.acc.lpFilter.value.getUint8(0)
+        ] +
+        "Hz,";
+      valueString +=
+        " Range: +-" +
+        AccRanges[Characteristics.acc.range.value.getUint8(0)] +
+        "g,";
+      valueString +=
+        " Axis: " +
+        PossibleAxis[Characteristics.acc.axis.value.getUint8(0)];
+      valueString +=
+        " Temperature: " + Number(smapleFrequencyTemp).toFixed(2) + `Hz`;
 
       temperature_time_divider = 60 * smapleFrequencyTemp;
 
       document.getElementById("setupInfoText").innerHTML = valueString;
 
-      smapleFrequencyAcc = SensorBaseFrequency / GlobalFrequencyDivider / accelerometerDividerCharacteristic.value.getUint8(0);
-      displayFrequencyrange = (smapleFrequencyAcc / 2);
+      smapleFrequencyAcc =
+        SensorBaseFrequency /
+        GlobalFrequencyDivider /
+        Characteristics.acc.divider.value.getUint8(0);
+      displayFrequencyrange = smapleFrequencyAcc / 2;
 
       accChart.data.datasets[0].data = accChart.data.datasets[0].data.map(
         (entry, index) => {
           return {
-            x: index * (displayFrequencyrange / ((fftLength / 2) - 1)),
-            y: entry.y
-          }
+            x: index * (displayFrequencyrange / (fftLength / 2 - 1)),
+            y: entry.y,
+          };
         }
       );
     }
@@ -1470,15 +1527,15 @@ function voltageFreqNumber() {
 }
 
 function ValidateAccelerometerSelection() {
-  if (typeof accelerometerDataCharacteristic !== "undefined") {
+  if (typeof Characteristics.acc.data !== "undefined") {
     if (document.getElementById("inp_check_accelerometer").checked) {
-      accelerometerDataCharacteristic.startNotifications()
+      Characteristics.acc.data.startNotifications()
         .catch(error => {
           console.log('Error: accelerometerDataCharacteristic.startNotifications()');
           return;
         });
     } else {
-      accelerometerDataCharacteristic.stopNotifications()
+      Characteristics.acc.data.stopNotifications()
         .catch(error => {
           console.log('Error: accelerometerDataCharacteristic.stopNotifications()');
           return;
@@ -1488,15 +1545,15 @@ function ValidateAccelerometerSelection() {
 }
 
 function ValidateTemperatureSelection() {
-  if (typeof temperatureDataCharacteristic !== "undefined") {
+  if (typeof Characteristics.temp.data !== "undefined") {
     if (document.getElementById("inp_check_temperature").checked) {
-      temperatureDataCharacteristic.startNotifications()
+      Characteristics.temp.data.startNotifications()
         .catch(error => {
           console.log('Error: temperatureDataCharacteristic.startNotifications()');
           return;
         });
     } else {
-      temperatureDataCharacteristic.stopNotifications()
+      Characteristics.temp.data.stopNotifications()
         .catch(error => {
           console.log('Error: temperatureDataCharacteristic.startNotifications()');
           return;
@@ -1506,15 +1563,15 @@ function ValidateTemperatureSelection() {
 }
 
 function ValidateVoltageSelection() {
-  if (typeof voltageDataCharacteristic !== "undefined") {
+  if (typeof Characteristics.voltage.data !== "undefined") {
     if (document.getElementById("inp_check_temperature").checked) {
-      voltageDataCharacteristic.startNotifications()
+      Characteristics.voltage.data.startNotifications()
         .catch(error => {
           console.log('Error: voltageDataCharacteristic.startNotifications()');
           return;
         });
     } else {
-      voltageDataCharacteristic.stopNotifications()
+      Characteristics.voltage.data.stopNotifications()
         .catch(error => {
           console.log('Error: voltageDataCharacteristic.startNotifications()');
           return;
