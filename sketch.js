@@ -1,33 +1,50 @@
-const accelerometerServiceUuid = "0000f00d-ef44-7fa8-4544-d09e246bac55"; // ACCELEROMETER_SERVICE_UUID
-const accelerometerFilterCharacteristicUuid = "0000abcd-ef44-7fa8-4544-d09e246bac55";
-const accelerometerLpFilterCharacteristicUuid = "0000ebcd-ef44-7fa8-4544-d09e246bac55";
-const accelerometerRangeCharacteristicUuid = "0000bcde-ef44-7fa8-4544-d09e246bac55";
-const accelerometerDividerCharacteristicUuid = "0000cdef-ef44-7fa8-4544-d09e246bac55";
-const accelerometerAxisCharacteristicUuid = "0000bcda-ef44-7fa8-4544-d09e246bac55";
-const accelerometerDataCharacteristicUuid = "0000cdeb-ef44-7fa8-4544-d09e246bac55";
-const accelerometerTypeCharacteristicUuid = "0000defc-ef44-7fa8-4544-d09e246bac55";
-const accelerometerResolutionCharacteristicUuid = "0000cdab-ef44-7fa8-4544-d09e246bac55";
-const accelerometerBinCharacteristicUuid = "0000debc-ef44-7fa8-4544-d09e246bac55";
-
-const temperatureServiceUuid = "0000f00d-f044-7fa8-4544-d09e246bac55"; // TEMPERATURE_SERVICE_UUID
-const temperatureDividerCharacteristicUuid = "00000123-f044-7fa8-4544-d09e246bac55";
-const temperatureDataCharacteristicUuid = "00001230-f044-7fa8-4544-d09e246bac55";
-
-const voltageServiceUuid = "0000f00d-f144-7fa8-4544-d09e246bac55"; // VOLTAGE_SERVICE_UUID
-const voltageDividerCharacteristicUuid = "00004567-f144-7fa8-4544-d09e246bac55";
-const voltageDataCharacteristicUuid = "00005674-f144-7fa8-4544-d09e246bac55";
-
-const infoServiceUuid = "0000f00d-f244-7fa8-4544-d09e246bac55"; // INFO_SERVICE_UUID
-const infoHardwareVersionCharacteristicUuid = "00008901-f244-7fa8-4544-d09e246bac55";
-const infoSoftwareVersionCharacteristicUuid = "00009018-f244-7fa8-4544-d09e246bac55";
-const infoGlobalDividerCharacteristicUuid = "00000189-f244-7fa8-4544-d09e246bac55";
-
-const dfuServiceUuid = "0000fe59-0000-1000-8000-00805f9b34fb"; // DFU_SERVICE_UUID
-const dfuCharacteristicUuid = "8ec90003-f315-4f60-9fb8-838830daea50";
+const UUIDs = {
+  acc: { // Accelerometer UUIDs
+    service: "0000f00d-ef44-7fa8-4544-d09e246bac55",
+    characteristics: {
+      filter: "0000abcd-ef44-7fa8-4544-d09e246bac55",
+      lpFilter: "0000ebcd-ef44-7fa8-4544-d09e246bac55",
+      range: "0000bcde-ef44-7fa8-4544-d09e246bac55",
+      divider: "0000cdef-ef44-7fa8-4544-d09e246bac55",
+      axis: "0000bcda-ef44-7fa8-4544-d09e246bac55",
+      data: "0000cdeb-ef44-7fa8-4544-d09e246bac55",
+      type: "0000defc-ef44-7fa8-4544-d09e246bac55",
+      resolution: "0000cdab-ef44-7fa8-4544-d09e246bac55",
+      bin: "0000debc-ef44-7fa8-4544-d09e246bac55",
+    },
+  },
+  temp: { // Temperature UUIDs
+    service: "0000f00d-f044-7fa8-4544-d09e246bac55",
+    characteristics: {
+      divider: "00000123-f044-7fa8-4544-d09e246bac55",
+      data: "00001230-f044-7fa8-4544-d09e246bac55",
+    },
+  },
+  volt: { // Voltage UUIDs
+    service: "0000f00d-f144-7fa8-4544-d09e246bac55",
+    characteristics: {
+      divider: "00004567-f144-7fa8-4544-d09e246bac55",
+      data: "00005674-f144-7fa8-4544-d09e246bac55",
+    },
+  },
+  info: { // Info UUIDs
+    service: "0000f00d-f244-7fa8-4544-d09e246bac55",
+    characteristics: {
+      hardwareVersion: "00008901-f244-7fa8-4544-d09e246bac55",
+      softwareVersion: "00009018-f244-7fa8-4544-d09e246bac55",
+      globalDivider: "00000189-f244-7fa8-4544-d09e246bac55",
+    },
+  },
+  dfu: { // DFU UUIDs
+    service: "0000fe59-0000-1000-8000-00805f9b34fb",
+    characteristics: {
+      dfu: "8ec90003-f315-4f60-9fb8-838830daea50",
+    }
+  }
+};
 
 const ADXL372accFilters = [0, 3.96, 7.88, 15.58, 30.48];
 const ADXL372accLpFilters = [200, 400, 800, 1600, 3200];
-const H3LIS331DLacFilters = [0, 0.25, 2.5, 10, 20];
 const AccRanges = [100, 200, 400];
 const ADXL372Range = [' ', 200, ' '];
 const PossibleAxis = ["All Axis", "X Axis", "Y Axis", "Z Axis"];
@@ -43,9 +60,36 @@ const temperatureFreqSlideMax = 100;
 
 let isConnected = false;
 let bluetoothDevice;
-let setupCharacteristic;
-let dataCharacteristic;
-let setupCharacteristicValue;
+
+let characteristics = {
+  acc: {
+    filter: null,
+    lpFilter: null,
+    range: null,
+    divider: null,
+    axis: null,
+    data: null,
+    type: null,
+    resolution: null,
+    bin: null,
+  },
+  temp: {
+    divider: null,
+    data: null,
+  },
+  voltage: {
+    divider: null,
+    data: null,
+  },
+  info: {
+    hardwareVersion: null,
+    softwareVersion: null,
+    globalDivider: null,
+  },
+  dfu: {
+    dfu: null
+  }
+};
 
 let accelerometerFilterCharacteristic;
 let accelerometerLpFilterCharacteristic;
@@ -67,19 +111,16 @@ let infoHardwareVersionCharacteristic;
 let infoSoftwareVersionCharacteristic;
 let infoGlobalDividerCharacteristic;
 
+let dfuCharacteristic;
+
 let HardwareVersion = -1;
 let SoftwareVersion = -1;
-
-let dfuCharacteristic;
 
 let GlobalFrequencyDivider = 20;
 
 let accVauleDivider = (2 ^ 11) / 200;
 
 let loggingActive = false;
-let logdataAcc = [];
-let logdataTemp;
-let logdataTempOverheadLength;
 
 let peakFreq = 0;
 
@@ -554,19 +595,20 @@ function onButtonClick() {
 
   let options = {
     filters: [
-      // { services: [accelerometerServiceUuid] },
-      // { services: [temperatureServiceUuid] },
+      // { services: [UUIDs.acc.service] },
+      // { services: [UUIDs.temp.service] },
       // { name: 'Smart B' }, // only devices with ''
-      { namePrefix: 'Smart' } // only devices starts with ''
+      { namePrefix: "Smart" }, // only devices starts with ''
     ],
     optionalServices: [
-      accelerometerServiceUuid,
-      temperatureServiceUuid,
-      voltageServiceUuid,
-      infoServiceUuid,
-      dfuServiceUuid],
+      UUIDs.acc.service,
+      UUIDs.temp.service,
+      UUIDs.volt.service,
+      UUIDs.info.service,
+      UUIDs.dfu.service
+    ],
     // acceptAllDevices : true  // show all
-  }
+  };
 
   console.log('Requesting Bluetooth Device...');
   statusText_p.innerHTML = `Scanning for Bluetooth Device`;
@@ -590,9 +632,9 @@ function onButtonClick() {
       console.log('services: ', services);
       services.forEach(service => {
         queue = queue.then(_ => service.getCharacteristics().then(characteristics => {
-          if (service.uuid === accelerometerServiceUuid) {
+          if (service.uuid === UUIDs.acc.service) {
             characteristics.forEach(characteristic => {
-              if (characteristic.uuid === accelerometerFilterCharacteristicUuid) {
+              if (characteristic.uuid === UUIDs.acc.characteristics.filter) {
                 accelerometerFilterCharacteristic = characteristic;
                 accelerometerFilterCharacteristic.addEventListener('characteristicvaluechanged',
                   handleAccelerometerFilterCharacteristicChanged);
@@ -606,23 +648,23 @@ function onButtonClick() {
                       return;
                     });
                 }, 200);
-              } else if (characteristic.uuid === accelerometerLpFilterCharacteristicUuid) {
+              } else if (characteristic.uuid === UUIDs.acc.characteristics.lpFilter) {
                 accelerometerLpFilterCharacteristic = characteristic;
                 accelerometerLpFilterCharacteristic.addEventListener('characteristicvaluechanged',
                   handleAccelerometerLpFilterCharacteristicChanged);
-              } else if (characteristic.uuid === accelerometerRangeCharacteristicUuid) {
+              } else if (characteristic.uuid === UUIDs.acc.characteristics.range) {
                 accelerometerRangeCharacteristic = characteristic;
                 accelerometerRangeCharacteristic.addEventListener('characteristicvaluechanged',
                   handleaccelerometerRangeCharacteristicChanged);
-              } else if (characteristic.uuid === accelerometerDividerCharacteristicUuid) {
+              } else if (characteristic.uuid === UUIDs.acc.characteristics.divider) {
                 accelerometerDividerCharacteristic = characteristic;
                 accelerometerDividerCharacteristic.addEventListener('characteristicvaluechanged',
                   handleaccelerometerDividerCharacteristicChanged);
-              } else if (characteristic.uuid === accelerometerAxisCharacteristicUuid) {
+              } else if (characteristic.uuid === UUIDs.acc.characteristics.axis) {
                 accelerometerAxisCharacteristic = characteristic;
                 accelerometerAxisCharacteristic.addEventListener('characteristicvaluechanged',
                   handleaccelerometerAxisCharacteristicChanged);
-              } else if (characteristic.uuid === accelerometerDataCharacteristicUuid) {
+              } else if (characteristic.uuid === UUIDs.acc.characteristics.data) {
                 accelerometerDataCharacteristic = characteristic;
                 accelerometerDataCharacteristic.addEventListener('characteristicvaluechanged',
                   handleaccelerometerDataCharacteristicChanged);
@@ -636,70 +678,95 @@ function onButtonClick() {
                       return;
                     });
                 }
-              } else if (characteristic.uuid === accelerometerTypeCharacteristicUuid) {
+              } else if (characteristic.uuid === UUIDs.acc.characteristics.type) {
                 accelerometerTypeCharacteristic = characteristic;
                 accelerometerTypeCharacteristic.addEventListener('characteristicvaluechanged',
                   handleaccelerometerTypeCharacteristicChanged);
-              } else if (characteristic.uuid === accelerometerResolutionCharacteristicUuid) {
+              } else if (characteristic.uuid === UUIDs.acc.characteristics.resolution) {
                 accelerometerResolutionCharacteristic = characteristic;
                 accelerometerResolutionCharacteristic.addEventListener('characteristicvaluechanged',
                   handleaccelerometerResolutionCharacteristicChanged);
-              } else if (characteristic.uuid === accelerometerBinCharacteristicUuid) {
+              } else if (characteristic.uuid === UUIDs.acc.characteristics.bin) {
                 accelerometerBinCharacteristic = characteristic;
                 accelerometerBinCharacteristic.addEventListener('characteristicvaluechanged',
                   handleaccelerometerBinCharacteristicChanged);
               }
             });
           }
-          else if (service.uuid === temperatureServiceUuid) {
-            characteristics.forEach(characteristic => {
-              if (characteristic.uuid === temperatureDividerCharacteristicUuid) {
+          else if (service.uuid === UUIDs.temp.service) {
+            characteristics.forEach((characteristic) => {
+              if (
+                characteristic.uuid === UUIDs.temp.characteristics.divider
+              ) {
                 temperatureDividerCharacteristic = characteristic;
-                temperatureDividerCharacteristic.addEventListener('characteristicvaluechanged',
-                  handletemperatureDividerCharacteristicChanged);
-              } else if (characteristic.uuid === temperatureDataCharacteristicUuid) {
+                temperatureDividerCharacteristic.addEventListener(
+                  "characteristicvaluechanged",
+                  handletemperatureDividerCharacteristicChanged
+                );
+              } else if (
+                characteristic.uuid === UUIDs.temp.characteristics.data
+              ) {
                 temperatureDataCharacteristic = characteristic;
-                temperatureDataCharacteristic.addEventListener('characteristicvaluechanged',
-                  handletemperatureDataCharacteristicChanged);
+                temperatureDataCharacteristic.addEventListener(
+                  "characteristicvaluechanged",
+                  handletemperatureDataCharacteristicChanged
+                );
               }
             });
-          }
-          else if (service.uuid === voltageServiceUuid) {
-            characteristics.forEach(characteristic => {
-              if (characteristic.uuid === voltageDividerCharacteristicUuid) {
+          } else if (service.uuid === UUIDs.volt.service) {
+            characteristics.forEach((characteristic) => {
+              if (characteristic.uuid === UUIDs.volt.characteristics.divider) {
                 voltageDividerCharacteristic = characteristic;
-                voltageDividerCharacteristic.addEventListener('characteristicvaluechanged',
-                  handlevoltageDividerCharacteristicChanged);
-              } else if (characteristic.uuid === voltageDataCharacteristicUuid) {
+                voltageDividerCharacteristic.addEventListener(
+                  "characteristicvaluechanged",
+                  handlevoltageDividerCharacteristicChanged
+                );
+              } else if (
+                characteristic.uuid === UUIDs.volt.characteristics.data
+              ) {
                 voltageDataCharacteristic = characteristic;
-                voltageDataCharacteristic.addEventListener('characteristicvaluechanged',
-                  handlevoltageDataCharacteristicChanged);
+                voltageDataCharacteristic.addEventListener(
+                  "characteristicvaluechanged",
+                  handlevoltageDataCharacteristicChanged
+                );
               }
             });
-          }
-          else if (service.uuid === infoServiceUuid) {
-            characteristics.forEach(characteristic => {
-              if (characteristic.uuid === infoHardwareVersionCharacteristicUuid) {
+          } else if (service.uuid === UUIDs.info.service) {
+            characteristics.forEach((characteristic) => {
+              if (
+                characteristic.uuid === UUIDs.info.characteristics.hardwareVersion
+              ) {
                 infoHardwareVersionCharacteristic = characteristic;
-                infoHardwareVersionCharacteristic.addEventListener('characteristicvaluechanged',
-                  handleinfoHardwareVersionCharacteristicChanged);
-              } else if (characteristic.uuid === infoSoftwareVersionCharacteristicUuid) {
+                infoHardwareVersionCharacteristic.addEventListener(
+                  "characteristicvaluechanged",
+                  handleinfoHardwareVersionCharacteristicChanged
+                );
+              } else if (
+                characteristic.uuid === UUIDs.info.characteristics.softwareVersion
+              ) {
                 infoSoftwareVersionCharacteristic = characteristic;
-                infoSoftwareVersionCharacteristic.addEventListener('characteristicvaluechanged',
-                  handleinfoSoftwareVersionCharacteristicChanged);
-              } else if (characteristic.uuid === infoGlobalDividerCharacteristicUuid) {
+                infoSoftwareVersionCharacteristic.addEventListener(
+                  "characteristicvaluechanged",
+                  handleinfoSoftwareVersionCharacteristicChanged
+                );
+              } else if (
+                characteristic.uuid === UUIDs.info.characteristics.globalDivider
+              ) {
                 infoGlobalDividerCharacteristic = characteristic;
-                infoGlobalDividerCharacteristic.addEventListener('characteristicvaluechanged',
-                  handleinfoGlobalDividerCharacteristicChanged);
+                infoGlobalDividerCharacteristic.addEventListener(
+                  "characteristicvaluechanged",
+                  handleinfoGlobalDividerCharacteristicChanged
+                );
               }
             });
-          }
-          else if (service.uuid === dfuServiceUuid) {
-            characteristics.forEach(characteristic => {
-              if (characteristic.uuid === dfuCharacteristicUuid) {
+          } else if (service.uuid === UUIDs.dfu.service) {
+            characteristics.forEach((characteristic) => {
+              if (characteristic.uuid === UUIDs.dfu.characteristics.dfu) {
                 dfuCharacteristic = characteristic;
-                dfuCharacteristic.addEventListener('characteristicvaluechanged',
-                  handledfuCharacteristicChanged);
+                dfuCharacteristic.addEventListener(
+                  "characteristicvaluechanged",
+                  handledfuCharacteristicChanged
+                );
                 // dfuCharacteristic.startNotifications()
                 //   .catch(error => {
                 //     console.warn('Argh! ' + error);
@@ -806,7 +873,6 @@ function handleaccelerometerDataCharacteristicChanged(event) {
     if (loggingActive) {
       try {
         logdataAccTemp += (event.target.value.getInt32(dataValueLength - 4));
-        // logdataAcc.push(logdataAccTemp);
         window.api.send("writeToAccDocument", logdataAccTemp+"\n");
       } catch (error) {
         console.warn('Argh! ' + error);
@@ -825,9 +891,6 @@ function handleaccelerometerDataCharacteristicChanged(event) {
       if (peakFreq != newPeakFreq)
       {
         peakFreq = newPeakFreq;
-        // console.log(newPeakFreq);
-        // console.log(Number(trumLength_input.value));
-        // console.log(Number(beltWeight_input.value));
 
         toneFrequency_p.innerHTML = newPeakFreq.toFixed(1);
         trumForce_p.innerHTML = (newPeakFreq**2 * 4 * Number(beltWeight_input.value) * (Number(trumLength_input.value)/1000)**2).toFixed(1);
@@ -842,16 +905,6 @@ function handleaccelerometerDataCharacteristicChanged(event) {
         }
       );
       accChart.update();
-      if (loggingActive) {
-        /* console.log(`logdataAcc size = ` + logdataAcc.length);
-        console.log(`jsHeapSizeLimit = ` + performance.memory.jsHeapSizeLimit);
-        console.log(`usedJSHeapSize = ` + performance.memory.usedJSHeapSize);
-        console.log(`totalJSHeapSize = ` + performance.memory.totalJSHeapSize); */
-        if (performance.memory.jsHeapSizeLimit === performance.memory.usedJSHeapSize) {
-          console.log(`Stop logging (memory problems)`);
-          logging(true);
-        }
-      }
     }
     else
       accUpdateDividerValue++;
@@ -913,7 +966,6 @@ function handleaccelerometerDataCharacteristicChanged(event) {
     if (loggingActive) {
       try {
         logdataAccTemp += (event.target.value.getInt32(dataValueLength - 4));
-        // logdataAcc.push(logdataAccTemp);
         window.api.send("writeToAccDocument", logdataAccTemp + "\n");
       } catch (error) {
         console.warn('Argh! ' + error);
@@ -982,16 +1034,13 @@ function handletemperatureDataCharacteristicChanged(event) {
 
     if (loggingActive) {
       if (i < (dataValueLength - 6)) {
-        // logdataTemp[0] += (value + `;` + `\n`);
         window.api.send("writeToTempDocument", value + `;` + `\n`);
       } else {
-        // logdataTemp[0] += (value + `;`);
         window.api.send("writeToTempDocument", value + `;`);
       }
     }
   }
   if (loggingActive) {
-    // logdataTemp[0] += (event.target.value.getInt32(dataValueLength - 4) + '\n');
     window.api.send(
       "writeToTempDocument",
       event.target.value.getInt32(dataValueLength - 4) + "\n"
