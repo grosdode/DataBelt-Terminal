@@ -9,7 +9,8 @@
   },
 
   "build": {
-    "appId": "data_belt",
+    "appId": "data_belt_terminal",
+    "productName": "DataBelt-Terminal",
     "win": {
       "target": [
         "nsis"
