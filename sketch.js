@@ -140,7 +140,7 @@ const DomEl = {
     statusText: document.getElementById("statusText"),
     statusMag: document.getElementById("MagText"),
     toneFrequency: document.getElementById("toneFrequency"),
-    trumForce: document.getElementById("trumForce"), 
+    trumForce: document.getElementById("trumForce"),
   },
   span: {
     connection: document.getElementById("span_tooltip_connection"),
@@ -155,11 +155,19 @@ const DomEl = {
   input: {
     trumLength: document.getElementById("trumLengthValue"),
     beltWeight: document.getElementById("beltWeightValue"),
+    accCheckbox: document.getElementById("inp_check_accelerometer"),
+    tempCheckbox: document.getElementById("inp_check_temperature"),
+    accFreqSlider: document.getElementById("inp_sli_accelerometerDivider"),
+    tempFreqSlider: document.getElementById("inp_sli_temperatureDivider"),
   },
 };
 
 DomEl.input.trumLength.addEventListener("change", cleanPeakFreq);
 DomEl.input.beltWeight.addEventListener("change", cleanPeakFreq);
+DomEl.input.accCheckbox.addEventListener("click", ValidateAccelerometerSelection);
+DomEl.input.tempCheckbox.addEventListener("click", ValidateTemperatureSelection);
+DomEl.input.accFreqSlider.addEventListener("input", accelerometerFreqSlide);
+DomEl.input.tempFreqSlider.addEventListener("input", temperatureFreqSlide);
 
 const TitleFontSize = 25;
 const ChartFontColor = "rgb(200, 200, 200)";
@@ -493,7 +501,7 @@ function setupTempDropdownContent(tempSamplinglist) {
   DomEl.dropDown.temp.innerHTML = ``;
   let tempSamplinglistlength = tempSamplinglist.length;
   for (let index = 0; index < tempSamplinglistlength; index++) {
-    DomEl.dropDown.temp.innerHTML += `<li><p id="t` + index + `" class="dropdownItem">` + tempSamplinglist[index] + `</p></li>`;
+    DomEl.dropDown.temp.innerHTML += `<li><p id="t` + index + `" class="dropdownItem">` + tempSamplinglist[index] + ` Hz</p></li>`;
   }
 }
 /************************************************************************/
