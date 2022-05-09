@@ -8,6 +8,7 @@ const {
 } = require("electron");
 const path = require("path");
 const fs = require("fs");
+const isDev = require("electron-is-dev");
 
 let mainWindow;
 let BLEDevicesWindow;
@@ -16,10 +17,6 @@ let openedAccFilePath;
 let openedTempFilePath;
 
 let callbackForBluetoothEvent = null;
-
-function isInDevMode() {
-  return !app.isPackaged;
-}
 
 const createWindow = () => {
   // Create the browser window.
@@ -46,54 +43,54 @@ const createWindow = () => {
     },
   });
 
-    mainWindow.webContents.on(
-      "select-bluetooth-device",
-      (event, deviceList, callback) => {
-        event.preventDefault(); // do not choose the first one
+  mainWindow.webContents.on(
+    "select-bluetooth-device",
+    (event, deviceList, callback) => {
+      event.preventDefault(); // do not choose the first one
 
-        if (deviceList && deviceList.length > 0) {
-          // find devices?
-          deviceList.forEach((element) => {
-            if (
-              !element.deviceName.includes(
-                // reduce noise by filter Devices without name
-                "Unbekanntes oder nicht unterstütztes Gerät" // better use filter options in renderer.js
-              ) &&
-              !element.deviceName.includes("Unknown or Unsupported Device") // better use filter options in renderer.js
-            ) {
-              if (BLEDevicesList.length > 0) {
-                // BLEDevicesList not empty?
-                if (
-                  BLEDevicesList.findIndex(
-                    // element is not already in BLEDevicesList
-                    (object) => object.deviceId === element.deviceId
-                  ) === -1
-                ) {
-                  BLEDevicesList.push(element);
-                  // console.log(BLEDevicesList);
-                }
-              } else {
+      if (deviceList && deviceList.length > 0) {
+        // find devices?
+        deviceList.forEach((element) => {
+          if (
+            !element.deviceName.includes(
+              // reduce noise by filter Devices without name
+              "Unbekanntes oder nicht unterstütztes Gerät" // better use filter options in renderer.js
+            ) &&
+            !element.deviceName.includes("Unknown or Unsupported Device") // better use filter options in renderer.js
+          ) {
+            if (BLEDevicesList.length > 0) {
+              // BLEDevicesList not empty?
+              if (
+                BLEDevicesList.findIndex(
+                  // element is not already in BLEDevicesList
+                  (object) => object.deviceId === element.deviceId
+                ) === -1
+              ) {
                 BLEDevicesList.push(element);
                 // console.log(BLEDevicesList);
-                if (!BLEDevicesWindow) {
-                  createBLEDevicesWindow(); // open new window to show devices
-                }
+              }
+            } else {
+              BLEDevicesList.push(element);
+              // console.log(BLEDevicesList);
+              if (!BLEDevicesWindow) {
+                createBLEDevicesWindow(); // open new window to show devices
               }
             }
-          });
-        }
-
-        callbackForBluetoothEvent = callback; // to make it accessible outside https://technoteshelp.com/electron-web-bluetooth-api-requestdevice-error/
+          }
+        });
       }
-    );
+
+      callbackForBluetoothEvent = callback; // to make it accessible outside https://technoteshelp.com/electron-web-bluetooth-api-requestdevice-error/
+    }
+  );
 
   // and load the index.html of the app.
   mainWindow.loadFile("index.html");
 
   // Open the DevTools.
-  // if (isInDevMode) mainWindow.webContents.openDevTools();
+  if (isDev) mainWindow.webContents.openDevTools();
 
-  if (!isInDevMode) mainWindow.maximize();
+  if (!isDev) mainWindow.maximize();
 };
 
 // This method will be called when Electron has finished
