@@ -67,31 +67,31 @@ let ShouldDisconnect = false;
 
 let Characteristics = {
   acc: {
-    filter: {},
-    lpFilter: {},
-    range: {},
-    divider: {},
-    axis: {},
-    data: {},
-    type: {},
-    resolution: {},
-    bin: {},
+    filter: null,
+    lpFilter: null,
+    range: null,
+    divider: null,
+    axis: null,
+    data: null,
+    type: null,
+    resolution: null,
+    bin: null,
   },
   temp: {
-    divider: {},
-    data: {},
+    divider: null,
+    data: null,
   },
   voltage: {
-    divider: {},
-    data: {},
+    divider: null,
+    data: null,
   },
   info: {
-    hardwareVersion: {},
-    softwareVersion: {},
-    globalDivider: {},
+    hardwareVersion: null,
+    softwareVersion: null,
+    globalDivider: null,
   },
   dfu: {
-    dfu: {}
+    dfu: null
   }
 };
 
@@ -1616,25 +1616,27 @@ function voltageFreqNumber() {
 }
 
 function ValidateAccelerometerSelection() {
-  if (typeof Characteristics.acc.data !== "undefined") {
+  if (!(typeof Characteristics.acc.data === "undefined" || Characteristics.acc.data === null)) {
     if (document.getElementById("inp_check_accelerometer").checked) {
-      Characteristics.acc.data.startNotifications()
-        .catch(error => {
-          console.log('Error: accelerometerDataCharacteristic.startNotifications()');
-          return;
-        });
+      Characteristics.acc.data.startNotifications().catch((error) => {
+        console.log(
+          "Error: accelerometerDataCharacteristic.startNotifications()"
+        );
+        return;
+      });
     } else {
-      Characteristics.acc.data.stopNotifications()
-        .catch(error => {
-          console.log('Error: accelerometerDataCharacteristic.stopNotifications()');
-          return;
-        });
+      Characteristics.acc.data.stopNotifications().catch((error) => {
+        console.log(
+          "Error: accelerometerDataCharacteristic.stopNotifications()"
+        );
+        return;
+      });
     }
   }
 }
 
 function ValidateTemperatureSelection() {
-  if (typeof Characteristics.temp.data !== "undefined") {
+  if (!(typeof Characteristics.temp.data === "undefined" || Characteristics.temp.data === null)) {
     if (document.getElementById("inp_check_temperature").checked) {
       Characteristics.temp.data.startNotifications()
         .catch(error => {
@@ -1652,7 +1654,7 @@ function ValidateTemperatureSelection() {
 }
 
 function ValidateVoltageSelection() {
-  if (typeof Characteristics.voltage.data !== "undefined") {
+  if (!(typeof Characteristics.voltage.data === "undefined" || Characteristics.voltage.data === null)) {
     if (document.getElementById("inp_check_temperature").checked) {
       Characteristics.voltage.data.startNotifications()
         .catch(error => {
