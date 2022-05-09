@@ -796,14 +796,23 @@ function onButtonClick() {
       // { services: [UUIDs.acc.service] },
       // { services: [UUIDs.temp.service] },
       // { name: 'Smart B' }, // only devices with ''
-      { namePrefix: "Smart" }, // only devices starts with ''
+      // { namePrefix: "Smart" }, // only devices starts with ''
+      {
+        manufacturerData: [
+          {
+            companyIdentifier: 0x59,
+            dataPrefix: new Uint8Array([
+              0x44, 0x6f, 0x6d, 0x69, 0x6e, 0x69, 0x6b, 0x20, 0x47, 0x2e]),
+          },
+        ],
+      },
     ],
     optionalServices: [
       UUIDs.acc.service,
       UUIDs.temp.service,
       UUIDs.volt.service,
       UUIDs.info.service,
-      UUIDs.dfu.service
+      UUIDs.dfu.service,
     ],
     // acceptAllDevices : true  // show all
   };
