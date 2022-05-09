@@ -10,13 +10,14 @@ contextBridge.exposeInMainWorld("api", {
       "createSensorDocuments",
       "writeToAccDocument",
       "writeToTempDocument",
+      "reallyDFUDialog",
     ];
     if (validChannels.includes(channel)) {
       ipcRenderer.send(channel, data);
     }
   },
   receive: (channel, func) => {
-    let validChannels = ["fromMain", "documentCreated"];
+    let validChannels = ["fromMain", "documentCreated", "performDFU"];
     if (validChannels.includes(channel)) {
       // Deliberately strip event as it includes `sender`
       ipcRenderer.on(channel, (event, ...args) => func(...args));

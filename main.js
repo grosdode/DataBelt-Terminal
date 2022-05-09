@@ -247,7 +247,15 @@ ipcMain.on("writeToAccDocument", (event, args) => {
 
 ipcMain.on("writeToTempDocument", (event, args) => {
   // console.log(args);
-  if (openedTempFilePath) {
+  if (openedTempFilePath) {  const window = BrowserWindow.getFocusedWindow();
+  dialog.showMessageBox(window, {
+    title: "Test",
+    buttons: ["Yes", "No"],
+    type: "info",
+    message: "This is a Test",
+  }).then((result) => {
+    console.log(result);
+  });
     fs.appendFile(openedTempFilePath, args, (error) => {
       if (error) {
         handleError("Error while try to write to document:\n" + error);
@@ -257,6 +265,26 @@ ipcMain.on("writeToTempDocument", (event, args) => {
   } else {
     handleError("Temperature data file path is not set");
   }
+});
+
+ipcMain.on("reallyDFUDialog", (event, args) => {
+  const window = BrowserWindow.getFocusedWindow();
+  dialog
+    .showMessageBox(window, {
+      title: "DFU mode activation",
+      buttons: ["Yes", "No"],
+      type: "info",
+      message:
+        "Do you really want to put the device in Device Firmware Update (DFU) mode?\nThis will reset the device and bring it in to DFU mode until an update is performed (e.g. with the nRF Connect app) or the device is reset by turning it off and on.",
+    })
+    .then((result) => {
+      console.log(result);
+      if (result.response === 0) {
+        mainWindow.webContents.send("performDFU", "yes");
+      } else if (result.response === 1) {
+        // mainWindow.webContents.send("performDFU", "no");
+      }
+    });
 });
 
 const handleError = (message) => {

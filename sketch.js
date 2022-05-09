@@ -526,7 +526,7 @@ function activateSettings() {
   DomEl.img.axisSettings.addEventListener('click', showAxisDropdownContent);
   DomEl.img.tempSettings.addEventListener('click', showTempDropdownContent);
   DomEl.img.uploadSetting.addEventListener('click', uploadSettingsToSensor);
-  DomEl.img.dfu.addEventListener('click', switchToDFUMode);
+  DomEl.img.dfu.addEventListener("click", requestDFUMode);
 }
 
 function deactivateSettings() {
@@ -541,7 +541,7 @@ function deactivateSettings() {
   DomEl.img.axisSettings.removeEventListener('click', showAxisDropdownContent);
   DomEl.img.tempSettings.removeEventListener('click', showTempDropdownContent);
   DomEl.img.uploadSetting.removeEventListener('click', uploadSettingsToSensor);
-  DomEl.img.dfu.removeEventListener('click', switchToDFUMode);
+  DomEl.img.dfu.removeEventListener("click", requestDFUMode);
 }
 
 function draw() {
@@ -588,10 +588,19 @@ function uploadSettingsToSensor() {
   // }, 2000);
 }
 
-function switchToDFUMode() {
-  console.log('dfuCharacteristic =' + Characteristics.dfu.dfu);
-  Characteristics.dfu.dfu.writeValue(DfuCommand);
+function requestDFUMode() {
+  window.api.send("reallyDFUDialog", "dfu?");  
 }
+
+window.api.receive("performDFU", (data) => {
+  console.log("dfuCharacteristic =" + Characteristics.dfu.dfu);
+  Characteristics.dfu.dfu.writeValue(DfuCommand);
+});
+
+// function switchToDFUMode() {
+//   console.log('dfuCharacteristic =' + Characteristics.dfu.dfu);
+//   Characteristics.dfu.dfu.writeValue(DfuCommand);
+// }
 
 function connectingToBLEDevice(device) { // have to be a promise
   console.log("Connecting to GATT Server...");
