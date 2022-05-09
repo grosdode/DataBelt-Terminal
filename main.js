@@ -282,7 +282,7 @@ ipcMain.on("reallyDFUDialog", (event, args) => {
       if (result.response === 0) {
         mainWindow.webContents.send("performDFU", "yes");
       } else if (result.response === 1) {
-        // mainWindow.webContents.send("performDFU", "no");
+        mainWindow.webContents.send("performDFU", "no");
       }
     });
 });

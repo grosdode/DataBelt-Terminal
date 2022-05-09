@@ -593,14 +593,11 @@ function requestDFUMode() {
 }
 
 window.api.receive("performDFU", (data) => {
-  console.log("dfuCharacteristic =" + Characteristics.dfu.dfu);
-  Characteristics.dfu.dfu.writeValue(DfuCommand);
+  if (data === "yes") {
+    console.log("dfuCharacteristic =" + Characteristics.dfu.dfu);
+    Characteristics.dfu.dfu.writeValue(DfuCommand);
+  }
 });
-
-// function switchToDFUMode() {
-//   console.log('dfuCharacteristic =' + Characteristics.dfu.dfu);
-//   Characteristics.dfu.dfu.writeValue(DfuCommand);
-// }
 
 function connectingToBLEDevice(device) { // have to be a promise
   console.log("Connecting to GATT Server...");
