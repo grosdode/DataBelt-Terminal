@@ -104,14 +104,14 @@
             <ul class="tick-sensors">
               <li>
                 <div class="tooltip">
-                  <input type="checkbox" id="inp_check_accelerometer" checked onclick="ValidateAccelerometerSelection()">
+                  <input type="checkbox" id="inp_check_accelerometer" checked>
                   <label class="checkbox-label" for="inp_check_accelerometer">Accelerometer</label>
                   <span class="tooltiptext tooltip-left">Tick to receive Accelerometer data</span>
                 </div>
               </li> 
               <li>
                 <div class="tooltip">
-                  <input type="checkbox" id="inp_check_temperature" checked onclick="ValidateTemperatureSelection()">
+                  <input type="checkbox" id="inp_check_temperature" checked>
                   <label class="checkbox-label" for="inp_check_temperature">Temperature</label>
                   <span class="tooltiptext tooltip-left">Tick to receive Temperature data</span>
                 </div>
@@ -123,14 +123,14 @@
             <ul class="slide-sensors">
               <li>
                 <div class="tooltip">
-                  <input type="range" min="400" max="3277" value="3277" class="slider" id="inp_sli_accelerometerDivider" oninput="accelerometerFreqSlide()">
+                  <input type="range" min="400" max="3277" value="3277" class="slider" id="inp_sli_accelerometerDivider">
                   <label class="slider-label" id="inp_num_accelerometerDivider" for="inp_sli_accelerometerDivider">3277 Hz</label>
                   <span class="tooltiptext tooltip-left">Slide to change accelerometer acquisition divider</span>
                 </div>
               </li> 
               <li>
                 <div class="tooltip">
-                  <input type="range" min="1" max="100" value="43" class="slider" id="inp_sli_temperatureDivider" oninput="temperatureFreqSlide()">
+                  <input type="range" min="1" max="100" value="43" class="slider" id="inp_sli_temperatureDivider">
                   <label class="slider-label" id="inp_num_temperatureDivider" for="inp_sli_temperatureDivider">0.5 Hz</label>
                   <span class="tooltiptext tooltip-left">Slide to change temperature acquisition divider</span>
                 </div>
