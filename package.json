@@ -7,7 +7,6 @@
     "start": "electron .",
     "build": "electron-builder"
   },
-
   "build": {
     "appId": "data_belt_terminal",
     "productName": "DataBelt-Terminal",
@@ -17,7 +16,7 @@
       ],
       "icon": "icon.ico"
     },
-    "nsis":{
+    "nsis": {
       "oneClick": false,
       "installerIcon": "icon.ico",
       "uninstallDisplayName": "DataBlet-Uninstaller",
@@ -25,12 +24,14 @@
       "allowToChangeInstallationDirectory": true
     }
   },
-
   "keywords": [],
   "author": "Dominik G.",
   "license": "MIT",
   "devDependencies": {
     "electron": "^18.2.0",
     "electron-builder": "^23.0.3"
+  },
+  "dependencies": {
+    "electron-is-dev": "^2.0.0"
   }
 }
