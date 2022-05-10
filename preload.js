@@ -22,6 +22,7 @@ contextBridge.exposeInMainWorld("api", {
       "documentCreated",
       "performDFU",
       "appVersion",
+      "updateMessage",
     ];
     if (validChannels.includes(channel)) {
       // Deliberately strip event as it includes `sender`

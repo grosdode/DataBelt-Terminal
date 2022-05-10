@@ -293,6 +293,10 @@ window.api.receive("appVersion", (data) => {
   console.log(data);
 });
 
+window.api.receive("updateMessage", (data) => {
+  console.log(data);
+});
+
 window.api.receive("documentCreated", (data) => {
   if (data === 'fail') {
     logging(true)

@@ -105,7 +105,7 @@ app.whenReady().then(() => {
   });
 
 
-  autoUpdater.checkForUpdatesAndNotify();
+  autoUpdater.checkForUpdatesAndNotify();//.checkForUpdates(); 
 
   app.on("activate", () => {
     // On macOS it's common to re-create a window in the app when the
@@ -153,6 +153,36 @@ function createBLEDevicesWindow() {
     BLEDevicesList = [];
   });
 }
+
+autoUpdater.on("checking-for-update", () => {
+  mainWindow.webContents.send("updateMessage", "Checking for update...");
+});
+autoUpdater.on("update-available", (info) => {
+  mainWindow.webContents.send("updateMessage", "Update available.");
+});
+autoUpdater.on("update-not-available", (info) => {
+  mainWindow.webContents.send("updateMessage", "No update available.");
+});
+autoUpdater.on("error", (err) => {
+  mainWindow.webContents.send("updateMessage", "Error in auto-updater. " + err);
+});
+
+autoUpdater.on("download-progress", (progressObj) => {
+  let log_message = "Download speed: " + progressObj.bytesPerSecond;
+  log_message = log_message + " - Downloaded " + progressObj.percent + "%";
+  log_message =
+    log_message +
+    " (" +
+    progressObj.transferred +
+    "/" +
+    progressObj.total +
+    ")";
+  mainWindow.webContents.send("updateMessage", log_message);
+});
+
+autoUpdater.on("update-downloaded", (info) => {
+  mainWindow.webContents.send("updateMessage", "Update downloaded");
+});
 
 ipcMain.on("toMain", (event, args) => {
   console.log(args);
