@@ -9,6 +9,7 @@ const {
 const path = require("path");
 const fs = require("fs");
 const isDev = require("electron-is-dev");
+const { autoUpdater } = require("electron-updater");
 
 let mainWindow;
 let BLEDevicesWindow;
@@ -98,6 +99,8 @@ const createWindow = () => {
 // Some APIs can only be used after this event occurs.
 app.whenReady().then(() => {
   createWindow();
+
+  if (!isDev) autoUpdater.checkForUpdatesAndNotify();
 
   app.on("activate", () => {
     // On macOS it's common to re-create a window in the app when the
