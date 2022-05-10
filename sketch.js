@@ -141,6 +141,7 @@ const DomEl = {
     statusMag: document.getElementById("MagText"),
     toneFrequency: document.getElementById("toneFrequency"),
     trumForce: document.getElementById("trumForce"),
+    versionNumber: document.getElementById("versionText"),
   },
   span: {
     connection: document.getElementById("span_tooltip_connection"),
@@ -290,7 +291,7 @@ function loggingCallback() {
 }
 
 window.api.receive("appVersion", (data) => {
-  console.log(data);
+  DomEl.p.versionNumber.innerHTML = "V " + data;
 });
 
 window.api.receive("updateMessage", (data) => {
@@ -838,6 +839,8 @@ function onButtonClick() {
     ],
     // acceptAllDevices : true  // show all
   };
+
+  window.api.send("searchBLEDevices", "start searching");
 
   console.log('Requesting Bluetooth Device...');
   DomEl.p.statusText.innerHTML = `Scanning for Bluetooth Device`;

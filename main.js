@@ -73,9 +73,6 @@ const createWindow = () => {
             } else {
               BLEDevicesList.push(element);
               // console.log(BLEDevicesList);
-              if (!BLEDevicesWindow) {
-                createBLEDevicesWindow(); // open new window to show devices
-              }
             }
           }
         });
@@ -149,6 +146,7 @@ function createBLEDevicesWindow() {
 
   BLEDevicesWindow.on("close", function () {
     BLEDevicesWindow = null;
+    if(callbackForBluetoothEvent != null)
     callbackForBluetoothEvent("");
     BLEDevicesList = [];
   });
@@ -200,6 +198,12 @@ ipcMain.on("BLEScannFinished", (event, args) => {
 ipcMain.on("getBLEDeviceList", (event, args) => {
   if (BLEDevicesWindow) {
     BLEDevicesWindow.webContents.send("BLEDeviceList", BLEDevicesList);
+  }
+});
+
+ipcMain.on("searchBLEDevices", (event, args) => {
+  if (!BLEDevicesWindow) {
+    createBLEDevicesWindow(); // open new window to show devices
   }
 });
 

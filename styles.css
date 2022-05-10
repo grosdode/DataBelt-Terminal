@@ -283,15 +283,10 @@ input[type="checkbox"]:hover + label::before {
   font-size: 3em;
 }
 
-.impressum{
+.VersionNumber{
   position: absolute;
   right: 0;
-  top: 6px;
-}
-
-.impressum ul li a {
-  color: white;
-  text-decoration: none;
+  top: 0;
 }
 
 .grid-container {

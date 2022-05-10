@@ -11,6 +11,7 @@ contextBridge.exposeInMainWorld("api", {
       "writeToAccDocument",
       "writeToTempDocument",
       "reallyDFUDialog",
+      "searchBLEDevices"
     ];
     if (validChannels.includes(channel)) {
       ipcRenderer.send(channel, data);
