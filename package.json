@@ -1,6 +1,6 @@
 {
   "name": "data_belt",
-  "version": "1.0.6",
+  "version": "1.0.7",
   "description": "Application to communicate with a DataBelt",
   "main": "main.js",
   "scripts": {
@@ -28,7 +28,8 @@
       "installerIcon": "icon.ico",
       "uninstallDisplayName": "DataBlet-Uninstaller",
       "license": "LICENSE",
-      "allowToChangeInstallationDirectory": true
+      "allowToChangeInstallationDirectory": true,
+      "artifactName": "${productName} Setup.${ext}"
     }
   },
   "keywords": [],
