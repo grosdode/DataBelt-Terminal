@@ -5,23 +5,16 @@
   "main": "main.js",
   "scripts": {
     "start": "electron .",
-    "build": "electron-builder",
-    "publish": "electron-builder -p always"
+    "build": "electron-builder"
   },
   "build": {
     "appId": "data_belt_terminal",
     "productName": "DataBelt-Terminal",
-    "directories": {
-      "output": "electron-build"
-    },
     "win": {
       "target": [
         "nsis"
       ],
-      "icon": "icon.ico",
-      "publish": [
-        "github"
-      ]
+      "icon": "icon.ico"
     },
     "nsis": {
       "oneClick": false,

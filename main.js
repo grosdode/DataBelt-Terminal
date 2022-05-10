@@ -9,7 +9,6 @@ const {
 const path = require("path");
 const fs = require("fs");
 const isDev = require("electron-is-dev");
-const { autoUpdater } = require("electron-updater");
 
 let mainWindow;
 let BLEDevicesWindow;
