@@ -176,6 +176,7 @@ autoUpdater.on("download-progress", (progressObj) => {
     progressObj.total +
     ")";
   mainWindow.webContents.send("updateMessage", log_message);
+  mainWindow.webContents.send("updateProgress", progressObj.percent);
 });
 
 autoUpdater.on("update-downloaded", (info) => {

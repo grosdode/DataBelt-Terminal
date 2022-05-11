@@ -289,6 +289,12 @@ input[type="checkbox"]:hover + label::before {
   top: 0;
 }
 
+.updateStatus{
+  position: absolute;
+  right: 60px;
+  top: 0;
+}
+
 .grid-container {
     display: grid;
     grid-template-columns: 70% 28%;

@@ -1,6 +1,6 @@
 {
   "name": "data_belt",
-  "version": "1.0.8",
+  "version": "1.0.9",
   "description": "Application to communicate with a DataBelt",
   "main": "main.js",
   "scripts": {

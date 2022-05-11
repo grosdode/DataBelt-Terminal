@@ -24,6 +24,7 @@ contextBridge.exposeInMainWorld("api", {
       "performDFU",
       "appVersion",
       "updateMessage",
+      "updateProgress",
     ];
     if (validChannels.includes(channel)) {
       // Deliberately strip event as it includes `sender`
