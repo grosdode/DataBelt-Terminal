@@ -317,7 +317,12 @@ ipcMain.on("reallyDFUDialog", (event, args) => {
       buttons: ["Yes", "No"],
       type: "info",
       message:
-        "Do you really want to put the device in Device Firmware Update (DFU) mode?\nThis will reset the device and bring it in to DFU mode until an update is performed (e.g. with the nRF Connect app) or the device is reset by turning it off and on.",
+        "Do you really want to put the device in Device " +
+        "Firmware Update (DFU) mode?\nThis will reset the " +
+        "device and bring it in to DFU mode until an update " +
+        "is performed (e.g. with the nRF Connect app or " +
+        "https://thegecko.github.io/web-bluetooth-dfu/examples/web.html) " +
+        "or the device is reset by turning it off and on. ",
     })
     .then((result) => {
       console.log(result);

@@ -356,6 +356,10 @@ input[type="checkbox"]:hover + label::before {
       -webkit-appearance: none;
       background-color: #fff;
     }
+
+    input[type='range']:disabled {
+      background-color: rgb(146, 146, 146);
+    }
     
     input[type='range']::-webkit-slider-thumb {
       width: 20px;
@@ -364,6 +368,15 @@ input[type="checkbox"]:hover + label::before {
       cursor: ew-resize;
       background: #188fa7;
       box-shadow: -200px 0 0 200px #a1a1a1;
+    }
+
+    input[type='range']:disabled::-webkit-slider-thumb {
+      width: 20px;
+      -webkit-appearance: none;
+      height: 30px;
+      cursor: ew-resize;
+      background: #116474;
+      box-shadow: -200px 0 0 200px #686868;
     }
 }
 
@@ -449,6 +462,12 @@ input[type="checkbox"]:hover + label::before {
       width: 10px;
       height: 13px;
       box-shadow: -100px 0 0 100px #a1a1a1;
+    }
+
+    input[type='range']:disabled::-webkit-slider-thumb {
+      width: 10px;
+      height: 13px;
+      box-shadow: -100px 0 0 100px #686868;
     }
   }
 

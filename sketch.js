@@ -131,7 +131,6 @@ const DomEl = {
     rangeSettings: document.getElementById("img_range"),
     axisSettings: document.getElementById("img_axis"),
     tempSettings: document.getElementById("img_temp"),
-    uploadSetting: document.getElementById("img_upload_settings"),
     dfu: document.getElementById("img_dfu"),
     log: document.getElementById("img_log"),
     BLEsymbol: document.getElementById("img_BLEsymbol"),
@@ -169,6 +168,26 @@ DomEl.input.accCheckbox.addEventListener("click", ValidateAccelerometerSelection
 DomEl.input.tempCheckbox.addEventListener("click", ValidateTemperatureSelection);
 DomEl.input.accFreqSlider.addEventListener("input", accelerometerFreqSlide);
 DomEl.input.tempFreqSlider.addEventListener("input", temperatureFreqSlide);
+
+let UpdateAccFreqTimer = null;
+let UpdateTempFreqTimer = null;
+
+function accelerometerFreqSlided() {
+  if (UpdateAccFreqTimer) {
+    clearTimeout(UpdateAccFreqTimer); //cancel the previous timer.
+    UpdateAccFreqTimer = null;
+  }
+  UpdateAccFreqTimer = setTimeout(updateAccFreq, 2000);
+};
+
+function temperatureFreqSlided() {
+  if (UpdateTempFreqTimer) {
+    clearTimeout(UpdateTempFreqTimer); //cancel the previous timer.
+    UpdateTempFreqTimer = null;
+  }
+  UpdateTempFreqTimer = setTimeout(updateTempFreq, 2000);
+};
+
 
 const TitleFontSize = 25;
 const ChartFontColor = "rgb(200, 200, 200)";
@@ -528,13 +547,15 @@ function activateSettings() {
   DomEl.img.rangeSettings.src = 'images/range.svg';
   DomEl.img.axisSettings.src = 'images/axis.svg';
   DomEl.img.tempSettings.src = 'images/Temp.svg';
-  DomEl.img.uploadSetting.src = 'images/upload.svg';
   DomEl.img.dfu.src = 'images/dfu.svg';
+  DomEl.input.accFreqSlider.disabled = false;
+  DomEl.input.tempFreqSlider.disabled = false;
   DomEl.img.HPVSettings.addEventListener('click', showHPVDropdownContent);
   DomEl.img.rangeSettings.addEventListener('click', showrangeDropdownContent);
   DomEl.img.axisSettings.addEventListener('click', showAxisDropdownContent);
   DomEl.img.tempSettings.addEventListener('click', showTempDropdownContent);
-  DomEl.img.uploadSetting.addEventListener('click', uploadSettingsToSensor);
+  DomEl.input.accFreqSlider.addEventListener("change", accelerometerFreqSlided);
+  DomEl.input.tempFreqSlider.addEventListener("change", temperatureFreqSlided);
   DomEl.img.dfu.addEventListener("click", requestDFUMode);
 }
 
@@ -543,13 +564,15 @@ function deactivateSettings() {
   DomEl.img.rangeSettings.src = 'images/range_gray.svg';
   DomEl.img.axisSettings.src = 'images/axis_gray.svg';
   DomEl.img.tempSettings.src = 'images/Temp_gray.svg';
-  DomEl.img.uploadSetting.src = 'images/upload_gray.svg';
   DomEl.img.dfu.src = 'images/dfu_gray.svg';
+  DomEl.input.accFreqSlider.disabled = true;
+  DomEl.input.tempFreqSlider.disabled = true;
   DomEl.img.HPVSettings.removeEventListener('click', showHPVDropdownContent);
   DomEl.img.rangeSettings.removeEventListener('click', showrangeDropdownContent);
   DomEl.img.axisSettings.removeEventListener('click', showAxisDropdownContent);
   DomEl.img.tempSettings.removeEventListener('click', showTempDropdownContent);
-  DomEl.img.uploadSetting.removeEventListener('click', uploadSettingsToSensor);
+  DomEl.input.accFreqSlider.removeEventListener("change", accelerometerFreqSlided);
+  DomEl.input.tempFreqSlider.removeEventListener("change", temperatureFreqSlided);
   DomEl.img.dfu.removeEventListener("click", requestDFUMode);
 }
 
@@ -578,23 +601,32 @@ function draw() {
   }
 }
 
-function uploadSettingsToSensor() {
-  let accelerometerDividerInputValue = Number(document.getElementById("inp_sli_accelerometerDivider").value);
-  accelerometerDividerInputValue = Math.round(SensorBaseFrequency / (GlobalFrequencyDivider * accelerometerDividerInputValue));
+function updateAccFreq() {
+  let accelerometerDividerInputValue = Number(
+    document.getElementById("inp_sli_accelerometerDivider").value
+  );
+  accelerometerDividerInputValue = Math.round(
+    SensorBaseFrequency /
+      (GlobalFrequencyDivider * accelerometerDividerInputValue)
+  );
+  console.log(accelerometerDividerInputValue);
   updateChar16Bit(Characteristics.acc.divider, accelerometerDividerInputValue);
+}
 
+function updateTempFreq() {
   let slider = document.getElementById("inp_sli_temperatureDivider");
-  let temperatureDividerInputValue = mapLinearToLog(slider.value, slider.min, slider.max, TemperatureFreqSlideMin, TemperatureFreqSlideMax);
-  temperatureDividerInputValue = Math.round(SensorBaseFrequency / (GlobalFrequencyDivider * temperatureDividerInputValue));
-  setTimeout(() => {
-    updateChar16Bit(Characteristics.temp.divider, temperatureDividerInputValue);
-  }, 1000);
-
-  // let voltageDividerInputValue = Number(document.getElementById('inp_num_voltageDivider').value);
-  // voltageDividerInputValue = Math.round(SensorBaseFrequency / (GlobalFrequencyDivider * voltageDividerInputValue));
-  // setTimeout(() => {
-  //   updateChar16Bit(voltageDividerCharacteristic, voltageDividerInputValue);
-  // }, 2000);
+  let temperatureDividerInputValue = mapLinearToLog(
+    slider.value,
+    slider.min,
+    slider.max,
+    TemperatureFreqSlideMin,
+    TemperatureFreqSlideMax
+  );
+  temperatureDividerInputValue = Math.round(
+    SensorBaseFrequency /
+      (GlobalFrequencyDivider * temperatureDividerInputValue)
+  );
+  updateChar16Bit(Characteristics.temp.divider, temperatureDividerInputValue);
 }
 
 function requestDFUMode() {
@@ -1460,11 +1492,12 @@ function handleSetupCharacteristicChanged() {
         Characteristics.temp.divider.value.getUint16(0, true) /
         GlobalFrequencyDivider;
 
-      document.getElementById("inp_num_accelerometerDivider").innerHTML =
+      let smapleFrequencyAcc =
         SensorBaseFrequency /
-          (Characteristics.acc.divider.value.getUint16(0, true) *
-            GlobalFrequencyDivider) +
-        " Hz";
+        (Characteristics.acc.divider.value.getUint16(0, true) *
+          GlobalFrequencyDivider);
+      document.getElementById("inp_num_accelerometerDivider").innerHTML =
+        smapleFrequencyAcc.toFixed(2) + " Hz";
       document.getElementById("inp_sli_accelerometerDivider").value =
         SensorBaseFrequency /
         (Characteristics.acc.divider.value.getUint16(0, true) *
@@ -1481,15 +1514,12 @@ function handleSetupCharacteristicChanged() {
           " Hz"
       );
 
+      let smapleFrequencyTemp =
+        SensorBaseFrequency /
+        Characteristics.temp.divider.value.getUint16(0, true) /
+        GlobalFrequencyDivider;
       document.getElementById("inp_num_temperatureDivider").innerHTML =
-        Math.round(
-          (SensorBaseFrequency /
-            Characteristics.temp.divider.value.getUint16(0, true) /
-            GlobalFrequencyDivider) *
-            1000
-        ) /
-          1000 +
-        " Hz";
+        smapleFrequencyTemp.toFixed(2) + " Hz";
       let slider = document.getElementById("inp_sli_temperatureDivider");
       slider.value = mapLogToLinear(
         SensorBaseFrequency /
@@ -1613,13 +1643,14 @@ function mapLogToLinear(value, minLin, maxLin, minLog, maxLog) {
 }
 
 function accelerometerFreqSlide() {
-  document.getElementById("inp_num_accelerometerDivider").innerHTML = document.getElementById("inp_sli_accelerometerDivider").value + ' Hz';
+
+  document.getElementById("inp_num_accelerometerDivider").innerHTML = document.getElementById("inp_sli_accelerometerDivider").value + '.00 Hz';
 }
 
 function temperatureFreqSlide() {
   let slider = document.getElementById("inp_sli_temperatureDivider");
   let inputNumTempFreq = document.getElementById("inp_num_temperatureDivider");
-  inputNumTempFreq.innerHTML = Math.round(mapLinearToLog(slider.value, slider.min, slider.max, TemperatureFreqSlideMin, TemperatureFreqSlideMax) * 100) / 100 + ' Hz';
+  inputNumTempFreq.innerHTML = mapLinearToLog(slider.value, slider.min, slider.max, TemperatureFreqSlideMin, TemperatureFreqSlideMax).toFixed(2) + ' Hz';
 }
 
 function voltageFreqSlide() {
