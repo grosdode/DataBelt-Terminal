@@ -153,34 +153,41 @@ function createBLEDevicesWindow() {
 }
 
 autoUpdater.on("checking-for-update", () => {
-  mainWindow.webContents.send("updateMessage", "Checking for update...");
+  if (mainWindow) 
+    mainWindow.webContents.send("updateMessage", "Checking for update...");
 });
 autoUpdater.on("update-available", (info) => {
-  mainWindow.webContents.send("updateMessage", "Update available.");
+  if (mainWindow)
+    mainWindow.webContents.send("updateMessage", "Update available.");
 });
 autoUpdater.on("update-not-available", (info) => {
-  mainWindow.webContents.send("updateMessage", "No update available.");
+  if (mainWindow)
+    mainWindow.webContents.send("updateMessage", "No update available.");
 });
 autoUpdater.on("error", (err) => {
-  mainWindow.webContents.send("updateMessage", "Error in auto-updater. " + err);
+  if (mainWindow)
+    mainWindow.webContents.send("updateMessage", "Error in auto-updater. " + err);
 });
 
 autoUpdater.on("download-progress", (progressObj) => {
   let log_message = "Download speed: " + progressObj.bytesPerSecond;
   log_message = log_message + " - Downloaded " + progressObj.percent + "%";
   log_message =
-    log_message +
-    " (" +
-    progressObj.transferred +
-    "/" +
-    progressObj.total +
-    ")";
+  log_message +
+  " (" +
+  progressObj.transferred +
+  "/" +
+  progressObj.total +
+  ")";
+  if (mainWindow)
   mainWindow.webContents.send("updateMessage", log_message);
-  mainWindow.webContents.send("updateProgress", progressObj.percent);
+  if (mainWindow)
+    mainWindow.webContents.send("updateProgress", progressObj.percent);
 });
 
 autoUpdater.on("update-downloaded", (info) => {
-  mainWindow.webContents.send("updateMessage", "Update downloaded");
+  if (mainWindow)
+    mainWindow.webContents.send("updateMessage", "Update downloaded");
 });
 
 ipcMain.on("toMain", (event, args) => {
