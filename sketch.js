@@ -318,14 +318,6 @@ window.api.receive("updateProgress", (data) => {
   DomEl.p.updateProgress.innerHTML = data.toFixed() + "%";
 });
 
-let testValue = 0;
-setInterval(() => {
-  if (testValue < 100) {
-    testValue += 0.1;
-    DomEl.p.updateProgress.innerHTML = testValue.toFixed() + "%";
-  }
-}, 100);
-
 window.api.receive("updateMessage", (data) => {
   console.log(data);
 });
