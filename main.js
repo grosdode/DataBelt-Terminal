@@ -26,7 +26,7 @@ const createWindow = () => {
     minHeight: 1000,
     title: "DataBelt",
     fullscreenable: false,
-
+    show: false,
     titleBarStyle: "hidden",
     titleBarOverlay: {
       color: "#141a50",
@@ -83,7 +83,7 @@ const createWindow = () => {
   // and load the index.html of the app.
   mainWindow.loadFile("src/index.html");
 
-    const isDev = require("electron-is-dev");
+  const isDev = require("electron-is-dev");
 
   // Open the DevTools.
   if (isDev) mainWindow.webContents.openDevTools();
@@ -95,10 +95,22 @@ const createWindow = () => {
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
 app.whenReady().then(() => {
+  splash = new BrowserWindow({
+    width: 330,
+    height: 260,
+    frame: false,
+    alwaysOnTop: true,
+    icon: "images/icon/icon512.png",
+  });
+  splash.loadFile("src/splash.html");
+  splash.center();
+
   createWindow();
 
   mainWindow.webContents.once("dom-ready", () => {
     mainWindow.webContents.send("appVersion", app.getVersion());
+    // splash.close();
+    // mainWindow.show();
   });
 
   autoUpdater.checkForUpdatesAndNotify();//.checkForUpdates(); 
