@@ -5,29 +5,29 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>DataBelt Terminal</title>
     <!-- <link rel="manifest" href="manifest.webmanifest" /> -->
-    <link rel="icon" href="images/icon/icon96.png" />
+    <link rel="icon" href="../images/icon/icon96.png" />
     <meta name="viewport" content="width=1024" />
     <meta name="Description" content="Author: Dominik G." />
     <meta name="theme-color" content="#24272E" />
     <meta http-equiv="Content-Security-Policy" content="script-src 'self';">
-    <link rel="apple-touch-icon" href="images/icon/icon192.png" />
+    <link rel="apple-touch-icon" href="../images/icon/icon192.png" />
 
     <link rel="stylesheet" type="text/css" href="styles.css" />
 
     <!-- Chart.js v2.9.2 https://www.chartjs.org (c) 2019 Chart.js Contributors Released under the MIT License -->
-    <script src="chartjs/Chart.min.js"></script>
+    <script src="../chartjs/Chart.min.js"></script>
     <!-- Copyright (c) 2014 Project Nayuki http://www.nayuki.io/page/free-small-fft-in-multiple-languages (MIT License) -->
-    <script src="nayuki-obj/fft.min.js"></script>
+    <script src="../nayuki-obj/fft.min.js"></script>
     <!-- Copyright (C) 2011-2017 by Jorik Tangelder (Eight Media) The MIT License (MIT) -->
     <!-- <script src="https://cdn.jsdelivr.net/npm/hammerjs@2.0.8"></script> -->
-    <script src="chartjs/hammer.min.js"></script>
+    <script src="../chartjs/hammer.min.js"></script>
     <!-- Copyright (c) 2013-2016 Nick Downie The MIT License (MIT)  -->
     <!-- <script src="https://cdn.jsdelivr.net/npm/hammerjs@2.0.8"></script> -->
-    <script src="chartjs/chartjs-plugin-zoom.min.js"></script>
+    <script src="../chartjs/chartjs-plugin-zoom.min.js"></script>
   </head>
   <body>
     <div class="mytitlebar" id="drag-region">
-      <img class="windowTitleStyle" src="images/icon/icon512.png" alt="icon" width="23" height="23"/>
+      <img class="windowTitleStyle" src="../images/icon/icon512.png" alt="icon" width="23" height="23"/>
       <p class="windowTitleStyle">DataBelt Terminal</p></div>
     <header>
       <h1 id="headerH1">Your System doesn't support "Web Bluetooth" <br>or your PC doesn't 
@@ -41,19 +41,19 @@
         <ul class="settings-group">
           <li class="clickable">
             <div class="tooltip">
-              <img src="images/search.svg" alt="search for devices" id="img_connection"/>
+              <img src="../images/search.svg" alt="search for devices" id="img_connection"/>
               <span class="tooltiptext tooltip-right" id="span_tooltip_connection">Start scanning for Sensors</span>
             </div>
           </li>
           <li class="clickable">
             <div class="tooltip">
-              <img src="images/Log_gray.svg" alt="start logging" id="img_log" />
+              <img src="../images/Log_gray.svg" alt="start logging" id="img_log" />
               <span class="tooltiptext tooltip-right">Start or stop data logging</span>
             </div>          
           </li>
           <li class="clickable">
             <div class="tooltip">
-            <img src="images/axisLimit.svg" alt="x axis limit" id="img_axis_limit" />
+            <img src="../images/axisLimit.svg" alt="x axis limit" id="img_axis_limit" />
             <span class="tooltiptext tooltip-right">Choose limit of the x axis</span>
             <ul class="dropdown" id="AxisLimitDropdownContent_ul">
               </ul>
@@ -64,11 +64,11 @@
         <div class="hideable-settings-show" id="hideable-settings">
           <ul class="settings-group-medium show-medium hide-small" id="settings-group-medium">
             <li id="exit" class="exit-btn">
-              <img class="clickable" src="images/exit.svg" alt="exit menu" />
+              <img class="clickable" src="../images/exit.svg" alt="exit menu" />
             </li>
             <li class="clickable">
               <div class="tooltip">
-                <img src="images/HPV_gray.svg" alt="high pass filter" id="img_HPV" />
+                <img src="../images/HPV_gray.svg" alt="high pass filter" id="img_HPV" />
                 <span class="tooltiptext tooltip-left">Choose high-pass filter</span>          
                 <ul class="dropdown" id="HPVDropdownContent_ul" style="display: none;">
                 </ul>
@@ -76,7 +76,7 @@
             </li>
             <li hidden class="clickable">
               <div class="tooltip">
-                <img src="images/range_gray.svg" alt="sensor range" id="img_range" />
+                <img src="../images/range_gray.svg" alt="sensor range" id="img_range" />
                 <span class="tooltiptext tooltip-left">Choose sensor range</span>
                 <ul class="dropdown" id="RangeDropdownContent_ul" style="display: none;">
                 </ul>
@@ -84,7 +84,7 @@
             </li>
             <li class="clickable">
               <div class="tooltip">
-                <img src="images/axis_gray.svg" alt="choose axis" id="img_axis" />
+                <img src="../images/axis_gray.svg" alt="choose axis" id="img_axis" />
                 <span class="tooltiptext tooltip-left">Choose sensor axis</span>
                 <ul class="dropdown" id="AxisDropdownContent_ul" style="display: none;">
                 </ul>
@@ -92,7 +92,7 @@
             </li>
             <li class="clickable">
               <div class="tooltip">
-                <img src="images/Temp_gray.svg" alt="temperature capture frequency" id="img_temp" />
+                <img src="../images/Temp_gray.svg" alt="temperature capture frequency" id="img_temp" />
                 <span class="tooltiptext tooltip-left">Choose temperature sampling rate</span>
                 <ul class="dropdown" id="TempDropdownContent_ul" style="display: none;">
                 </ul>
@@ -141,7 +141,7 @@
           <div class="settings-group show-very-large hide-small" id="settings-group-very-large2">
             <div class="clickable">
               <div class="tooltip">
-                <img class="barActionImage" src="images/dfu_gray.svg" alt="" id="img_dfu">
+                <img class="barActionImage" src="../images/dfu_gray.svg" alt="" id="img_dfu">
                 <span class="tooltiptext tooltip-left">Bring Sensor in Device Firmware Update (DFU) mode</span>
               </div>
             </div>
@@ -149,13 +149,13 @@
         </div>
 
         <div class="tooltip">
-          <img src="images/logoSB_dis.svg" alt="connection state" id="img_BLEsymbol" />
+          <img src="../images/logoSB_dis.svg" alt="connection state" id="img_BLEsymbol" />
           <span class="tooltiptext tooltip-left">Connection status</span>
         </div> 
 
         <div class="clickable hide-very-large">
           <div class="tooltip">
-            <img src="images/menu.svg" alt="menu" id="img_menu" class="menu" />
+            <img src="../images/menu.svg" alt="menu" id="img_menu" class="menu" />
             <span class="tooltiptext tooltip-left">Show more settings</span>
           </div>
         </div>
