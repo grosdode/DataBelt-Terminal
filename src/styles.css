@@ -253,6 +253,11 @@ input[type="checkbox"]:hover + label::before {
   border-color: #188fa7;
   cursor: pointer;
 }
+input[type="checkbox"]:disabled + label::before {
+  background: rgb(145, 145, 145);
+  color: #424242;
+  border: 2px solid rgb(145, 145, 145);
+}
 
 .chart {
   height: calc(100vh - 160px);

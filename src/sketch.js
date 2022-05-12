@@ -328,7 +328,7 @@ window.api.receive("documentCreated", (data) => {
   }
   else
   {
-    DomEl.img.log.src = "images/Log_active.svg";
+    DomEl.img.log.src = "../images/Log_active.svg";
     LoggingActive = true;
     deactivateSettings();
 
@@ -394,7 +394,7 @@ window.api.receive("documentCreated", (data) => {
 
 function logging(abort = false) {
   if (LoggingActive) {
-    DomEl.img.log.src = 'images/Log.svg';
+    DomEl.img.log.src = '../images/Log.svg';
 
     LoggingActive = false;
     activateSettings();
@@ -548,13 +548,15 @@ function handleConnection() {
 }
 
 function activateSettings() {
-  DomEl.img.HPVSettings.src = 'images/HPV.svg';
-  DomEl.img.rangeSettings.src = 'images/range.svg';
-  DomEl.img.axisSettings.src = 'images/axis.svg';
-  DomEl.img.tempSettings.src = 'images/Temp.svg';
-  DomEl.img.dfu.src = 'images/dfu.svg';
+  DomEl.img.HPVSettings.src = '../images/HPV.svg';
+  DomEl.img.rangeSettings.src = '../images/range.svg';
+  DomEl.img.axisSettings.src = '../images/axis.svg';
+  DomEl.img.tempSettings.src = '../images/Temp.svg';
+  DomEl.img.dfu.src = '../images/dfu.svg';
   DomEl.input.accFreqSlider.disabled = false;
   DomEl.input.tempFreqSlider.disabled = false;
+  DomEl.input.accCheckbox.disabled = false;
+  DomEl.input.tempCheckbox.disabled = false;
   DomEl.img.HPVSettings.addEventListener('click', showHPVDropdownContent);
   DomEl.img.rangeSettings.addEventListener('click', showrangeDropdownContent);
   DomEl.img.axisSettings.addEventListener('click', showAxisDropdownContent);
@@ -565,13 +567,15 @@ function activateSettings() {
 }
 
 function deactivateSettings() {
-  DomEl.img.HPVSettings.src = 'images/HPV_gray.svg';
-  DomEl.img.rangeSettings.src = 'images/range_gray.svg';
-  DomEl.img.axisSettings.src = 'images/axis_gray.svg';
-  DomEl.img.tempSettings.src = 'images/Temp_gray.svg';
-  DomEl.img.dfu.src = 'images/dfu_gray.svg';
+  DomEl.img.HPVSettings.src = '../images/HPV_gray.svg';
+  DomEl.img.rangeSettings.src = '../images/range_gray.svg';
+  DomEl.img.axisSettings.src = '../images/axis_gray.svg';
+  DomEl.img.tempSettings.src = '../images/Temp_gray.svg';
+  DomEl.img.dfu.src = '../images/dfu_gray.svg';
   DomEl.input.accFreqSlider.disabled = true;
   DomEl.input.tempFreqSlider.disabled = true;
+  DomEl.input.accCheckbox.disabled = true;
+  DomEl.input.tempCheckbox.disabled = true;
   DomEl.img.HPVSettings.removeEventListener('click', showHPVDropdownContent);
   DomEl.img.rangeSettings.removeEventListener('click', showrangeDropdownContent);
   DomEl.img.axisSettings.removeEventListener('click', showAxisDropdownContent);
@@ -583,18 +587,18 @@ function deactivateSettings() {
 
 function draw() {
   if (IsConnected) {
-    DomEl.img.BLEsymbol.src = 'images/logoSB.svg';
-    DomEl.img.connectionButton.src = 'images/BLE_disconnect.svg';
-    DomEl.img.log.src = 'images/Log.svg';
+    DomEl.img.BLEsymbol.src = '../images/logoSB.svg';
+    DomEl.img.connectionButton.src = '../images/BLE_disconnect.svg';
+    DomEl.img.log.src = '../images/Log.svg';
     DomEl.span.connection.textContent = 'Disconnect from Sensor';
     activateSettings();
     DomEl.img.log.addEventListener('click', loggingCallback);
     // Request a screen wake lock…
     requestWakeLock();
   } else {
-    DomEl.img.BLEsymbol.src = "images/logoSB_dis.svg";
-    DomEl.img.connectionButton.src = 'images/search.svg';
-    DomEl.img.log.src = 'images/Log_gray.svg';
+    DomEl.img.BLEsymbol.src = "../images/logoSB_dis.svg";
+    DomEl.img.connectionButton.src = '../images/search.svg';
+    DomEl.img.log.src = '../images/Log_gray.svg';
     DomEl.span.connection.textContent = 'Start scanning for Sensors';
     deactivateSettings();
     DomEl.img.log.removeEventListener('click', loggingCallback);
