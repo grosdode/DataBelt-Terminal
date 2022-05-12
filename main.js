@@ -12,6 +12,7 @@ const isDev = require("electron-is-dev");
 const { autoUpdater } = require("electron-updater");
 
 let mainWindow;
+let DFUWindow;
 let BLEDevicesWindow;
 let BLEDevicesList = [];
 let openedAccFilePath;
@@ -83,7 +84,7 @@ const createWindow = () => {
   );
 
   // and load the index.html of the app.
-  mainWindow.loadFile("index.html");
+  mainWindow.loadFile("src/index.html");
 
   // Open the DevTools.
   if (isDev) mainWindow.webContents.openDevTools();
@@ -100,7 +101,6 @@ app.whenReady().then(() => {
   mainWindow.webContents.once("dom-ready", () => {
     mainWindow.webContents.send("appVersion", app.getVersion());
   });
-
 
   autoUpdater.checkForUpdatesAndNotify();//.checkForUpdates(); 
 
@@ -138,11 +138,11 @@ function createBLEDevicesWindow() {
       nodeIntegration: false, // is default value after Electron v5
       contextIsolation: true, // protect against prototype pollution
       enableRemoteModule: false, // turn off remote
-      preload: path.join(__dirname, "BLEDevicesPreload.js"), // use a preload script
+      preload: path.join(__dirname, "src/BLESearch/BLEDevicesPreload.js"), // use a preload script
     },
   });
 
-  BLEDevicesWindow.loadFile("BLEDevicesWindow.html");
+  BLEDevicesWindow.loadFile("src/BLESearch/BLEDevicesWindow.html");
 
   BLEDevicesWindow.on("close", function () {
     BLEDevicesWindow = null;
@@ -151,6 +151,37 @@ function createBLEDevicesWindow() {
     BLEDevicesList = [];
   });
 }
+
+
+function createDFUWindow() {
+  DFUWindow = new BrowserWindow({
+    width: 600,
+    height: 240,
+    parent: mainWindow,
+    title: "Device Firmware Update",
+    modal: true,
+    titleBarStyle: "hidden",
+    titleBarOverlay: {
+      color: "#141a50",
+      symbolColor: "#ffffff",
+      height: 29,
+    },
+    webPreferences: {
+      nodeIntegration: false, // is default value after Electron v5
+      contextIsolation: true, // protect against prototype pollution
+      enableRemoteModule: false, // turn off remote
+      preload: path.join(__dirname, "src/DFUMode/DFUPreload.js"), // use a preload script
+    },
+  });
+
+  DFUWindow.loadFile("src/DFUMode/DFUWindow.html");
+
+  DFUWindow.on("close", function () {
+    mainWindow.webContents.send("performDFU", "no");
+    DFUWindow = null;
+  });
+}
+
 
 autoUpdater.on("checking-for-update", () => {
   if (mainWindow) 
@@ -298,14 +329,6 @@ ipcMain.on("writeToAccDocument", (event, args) => {
 ipcMain.on("writeToTempDocument", (event, args) => {
   // console.log(args);
   if (openedTempFilePath) {  const window = BrowserWindow.getFocusedWindow();
-  dialog.showMessageBox(window, {
-    title: "Test",
-    buttons: ["Yes", "No"],
-    type: "info",
-    message: "This is a Test",
-  }).then((result) => {
-    console.log(result);
-  });
     fs.appendFile(openedTempFilePath, args, (error) => {
       if (error) {
         handleError("Error while try to write to document:\n" + error);
@@ -318,28 +341,15 @@ ipcMain.on("writeToTempDocument", (event, args) => {
 });
 
 ipcMain.on("reallyDFUDialog", (event, args) => {
-  const window = BrowserWindow.getFocusedWindow();
-  dialog
-    .showMessageBox(window, {
-      title: "DFU mode activation",
-      buttons: ["Yes", "No"],
-      type: "info",
-      message:
-        "Do you really want to put the device in Device " +
-        "Firmware Update (DFU) mode?\nThis will reset the " +
-        "device and bring it in to DFU mode until an update " +
-        "is performed (e.g. with the nRF Connect app or " +
-        "https://thegecko.github.io/web-bluetooth-dfu/examples/web.html) " +
-        "or the device is reset by turning it off and on. ",
-    })
-    .then((result) => {
-      console.log(result);
-      if (result.response === 0) {
-        mainWindow.webContents.send("performDFU", "yes");
-      } else if (result.response === 1) {
-        mainWindow.webContents.send("performDFU", "no");
-      }
-    });
+  createDFUWindow();
+});
+
+ipcMain.on("shouldPerformeDFU", (event, args) => {
+  if (args === "yes") {
+    mainWindow.webContents.send("performDFU", "yes");
+  } else {
+    mainWindow.webContents.send("performDFU", "no");
+  }
 });
 
 const handleError = (message) => {

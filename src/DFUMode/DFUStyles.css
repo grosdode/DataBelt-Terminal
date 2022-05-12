@@ -2,10 +2,36 @@ body {
     background-color: #494949;
     font-family: Arial, Helvetica, sans-serif;
     margin: 0px;
+    color: white;
 }
 
-ul {
-    color: white;
+p {
+    margin: 20px;
+}
+
+.mainText {
+    font-size: 20px;
+}
+
+button{
+    width: 60px;
+    height: 30px;
+    margin-left: 20;
+    margin-right: 20;
+    font-size: 20px;
+}
+
+.space {
+    width: 40px;
+    height: auto;
+    display: inline-block;
+}
+
+.buttonContainer{
+    text-align: center;
+}
+
+/* ul {
     list-style-type: none;
     padding: 0px;
     margin: 5px
@@ -14,12 +40,8 @@ ul {
 li {
 
     padding: 10px 10px 10px 30px;
-}
+}*/
 
-li:hover {
-    background-color: #696567;
-    cursor: pointer;
-}
 .mytitlebar {
     height: 29px;
     margin: 0px;
