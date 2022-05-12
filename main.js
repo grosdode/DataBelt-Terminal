@@ -2,13 +2,10 @@
 const {
   app,
   BrowserWindow,
-  ipcMain,
-  dialog,
-  Notification
+  ipcMain
 } = require("electron");
 const path = require("path");
 const fs = require("fs");
-const isDev = require("electron-is-dev");
 const { autoUpdater } = require("electron-updater");
 
 let mainWindow;
@@ -85,6 +82,8 @@ const createWindow = () => {
 
   // and load the index.html of the app.
   mainWindow.loadFile("src/index.html");
+
+    const isDev = require("electron-is-dev");
 
   // Open the DevTools.
   if (isDev) mainWindow.webContents.openDevTools();
@@ -260,6 +259,8 @@ ipcMain.on("createSensorDocuments", () => {
     `_` +
     padZeros(hour, 2) +
     padZeros(minute, 2);
+  
+  const {dialog} = require("electron");
 
   dialog
     .showSaveDialog(mainWindow, {
@@ -353,6 +354,7 @@ ipcMain.on("shouldPerformeDFU", (event, args) => {
 });
 
 const handleError = (message) => {
+  const { Notification } = require("electron");
   new Notification({
     title: "Error",
     body: message,
