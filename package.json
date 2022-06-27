@@ -3,15 +3,16 @@
   "version": "1.1.4",
   "description": "Application to communicate with a DataBelt",
   "main": "main.js",
+  "author": "D. Großkurth",
   "scripts": {
     "start": "electron .",
     "build": "electron-builder",
     "publish": "electron-builder -p always"
   },
   "build": {
-    "appId": "com.electron.${name}",
+    "appId": "com.electron.data_belt",
     "productName": "DataBelt-Terminal",
-    "copyright" : "Copyright © year ${author}",
+    "copyright" : "Copyright © year D. Großkurth",
     "directories": {
       "output": "electron-build"
     },
@@ -34,7 +35,6 @@
     }
   },
   "keywords": [],
-  "author": "Dominik G.",
   "license": "MIT",
   "devDependencies": {
     "electron": "^18.2.0",
