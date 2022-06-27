@@ -1,6 +1,6 @@
 {
   "name": "data_belt",
-  "version": "1.1.2",
+  "version": "1.1.4",
   "description": "Application to communicate with a DataBelt",
   "main": "main.js",
   "scripts": {
@@ -9,8 +9,9 @@
     "publish": "electron-builder -p always"
   },
   "build": {
-    "appId": "data_belt_terminal",
+    "appId": "com.electron.${name}",
     "productName": "DataBelt-Terminal",
+    "copyright" : "Copyright © year ${author}",
     "directories": {
       "output": "electron-build"
     },
@@ -26,7 +27,7 @@
     "nsis": {
       "oneClick": false,
       "installerIcon": "icon.ico",
-      "uninstallDisplayName": "DataBlet-Uninstaller",
+      "uninstallDisplayName": "DataBelt-Uninstaller",
       "license": "LICENSE",
       "allowToChangeInstallationDirectory": true,
       "artifactName": "${productName} Setup.${ext}"
