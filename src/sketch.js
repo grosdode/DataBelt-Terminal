@@ -1911,7 +1911,7 @@ function initTempChart() {
           type: 'linear',
           scaleLabel: {
             display: true,
-            labelString: 'time in m',
+            labelString: 'time in min',
             fontSize: AxisFontSize,
             fontColor: ChartFontColor,
           },
