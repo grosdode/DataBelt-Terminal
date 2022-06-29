@@ -1154,10 +1154,21 @@ function handleaccelerometerDataCharacteristicChanged(event) {
   }
 }
 
+const addMilliseconds = (date, milliseconds) => {
+  const result = new Date(date);
+  result.setMilliseconds(result.getMilliseconds() + milliseconds);
+  return result;
+};
+
 function handletemperatureDataCharacteristicChanged(event) {
   let dataValueLength = event.target.value.byteLength;
   for (let i = 0; i < dataValueLength - 4; i += 2) {
     TempTime = TempTime + (1 / Temperature_time_divider);
+
+    var d = new Date();
+    d.setHours(0, 0, 0, 0);
+    date = addMilliseconds(d, Math.round(TempTime * 1000));
+
     let value = event.target.value.getInt16(i) / TEMPERATURE_DIVIDER;
     if (value < TempYMin)
       TempYMin = value;
@@ -1165,8 +1176,8 @@ function handletemperatureDataCharacteristicChanged(event) {
     if (value > TempYMax)
       TempYMax = value;
 
-    TempChart.data.datasets[0].data.push({ x: TempTime, y: value });
-
+    TempChart.data.datasets[0].data.push({ t: date, y: value });
+    
     if (LoggingActive) {
       if (i < (dataValueLength - 6)) {
         window.api.send("writeToTempDocument", value + `;` + `\n`);
@@ -1185,10 +1196,10 @@ function handletemperatureDataCharacteristicChanged(event) {
   TempChart.resetZoom();
   TempChart.config.options.scales.yAxes[0].ticks.min = Math.round(TempYMin - TempAxisAhead);
   TempChart.config.options.scales.yAxes[0].ticks.max = Math.round(TempYMax + TempAxisAhead);
-  if (TempTime - TEMP_TIME_WINDOW > 0) {
-    TempChart.config.options.scales.xAxes[0].ticks.min = Math.round((TempTime - TEMP_TIME_WINDOW) * 10) / 10;
-    TempChart.config.options.scales.xAxes[0].ticks.max = Math.round(TempTime * 10) / 10;
-  }
+  // if (TempTime - TEMP_TIME_WINDOW > 0) {
+  //   TempChart.config.options.scales.xAxes[0].ticks.min = Math.round((TempTime - TEMP_TIME_WINDOW) * 10) / 10;
+  //   TempChart.config.options.scales.xAxes[0].ticks.max = Math.round(TempTime * 10) / 10;
+  // }
 
   TempChart.update();
 }
@@ -1585,7 +1596,7 @@ function handleSetupCharacteristicChanged() {
       valueString +=
         " Temperature: " + Number(SmapleFrequencyTemp).toFixed(2) + `Hz`;
 
-      Temperature_time_divider = 60 * SmapleFrequencyTemp;
+      Temperature_time_divider = SmapleFrequencyTemp;
 
       document.getElementById("setupInfoText").innerHTML = valueString;
 
@@ -1862,33 +1873,35 @@ function initAccChart() {
 }
 
 function initTempChart() {
-  TempChart = new Chart(document.getElementById('tempChart').getContext('2d'), {
-    type: 'line',
+  TempChart = new Chart(document.getElementById("tempChart").getContext("2d"), {
+    type: "line",
     data: {
-      datasets: [{
-        label: 'Temperature Data',
-        data: [],
-        backgroundColor: 'rgb(255, 255, 255)',
-        borderColor: 'rgb(255, 255, 255)',
-        fill: false,
-        pointHoverBackgroundColor: 'rgb(218, 15, 15)',
-        borderWidth: 3,
-      }]
+      datasets: [
+        {
+          label: "Temperature Data",
+          data: [],
+          backgroundColor: "rgb(255, 255, 255)",
+          borderColor: "rgb(255, 255, 255)",
+          fill: false,
+          pointHoverBackgroundColor: "rgb(218, 15, 15)",
+          borderWidth: 3,
+        },
+      ],
     },
     options: {
       elements: {
         line: {
-          tension: 0.2 // disables bezier curves
+          tension: 0.2, // disables bezier curves
         },
         point: {
           radius: 1,
-          hitRadius: 5
-        }
+          hitRadius: 5,
+        },
       },
       maintainAspectRatio: false,
       title: {
         display: true,
-        text: 'Temperature',
+        text: "Temperature",
         fontSize: TitleFontSize,
         fontColor: ChartFontColor,
       },
@@ -1897,49 +1910,65 @@ function initTempChart() {
         labels: {
           fontColor: ChartFontColor,
           // fontSize: 18
-        }
+        },
       },
       animation: {
-        duration: 0 // general animation time
+        duration: 0, // general animation time
       },
       hover: {
         animationDuration: 0, // duration of animations when hovering an item
       },
-      responsiveAnimationDuration: 0, // animation duration after a resize  
+      responsiveAnimationDuration: 0, // animation duration after a resize
       scales: {
-        xAxes: [{
-          type: 'linear',
-          scaleLabel: {
-            display: true,
-            labelString: 'time in min',
-            fontSize: AxisFontSize,
-            fontColor: ChartFontColor,
+        // xAxes: [{
+        //   type: 'linear',
+        //   scaleLabel: {
+        //     display: true,
+        //     labelString: 'time in min',
+        //     fontSize: AxisFontSize,
+        //     fontColor: ChartFontColor,
+        //   },
+        //   ticks: {
+        //     fontSize: AxisTickFontSize,
+        //     // beginAtZero: true,
+        //     stepSize: 0.1,
+        //     min: 0,
+        //     max: TEMP_TIME_WINDOW,
+        //     maxTicksLimit: 11,
+        //     fontColor: ChartFontColor,
+        //   }
+        // }],
+        xAxes: [
+          {
+            type: "time",
+            time: {
+              unitStepSize: 1,
+              displayFormats: {
+                millisecond: "HH:mm:ss.SSS",
+                second: "HH:mm:ss",
+                minute: "HH:mm",
+                hour: "HH",
+              },
+            },
           },
-          ticks: {
-            fontSize: AxisTickFontSize,
-            // beginAtZero: true,
-            stepSize: 0.1,
-            min: 0,
-            max: TEMP_TIME_WINDOW,
-            maxTicksLimit: 11,
-            fontColor: ChartFontColor,
-          }
-        }],
-        yAxes: [{
-          type: 'linear',
-          scaleLabel: {
-            display: true,
-            labelString: 'Temperature in °C',
-            fontSize: AxisFontSize,
-            fontColor: ChartFontColor,
+        ],
+        yAxes: [
+          {
+            type: "linear",
+            scaleLabel: {
+              display: true,
+              labelString: "Temperature in °C",
+              fontSize: AxisFontSize,
+              fontColor: ChartFontColor,
+            },
+            ticks: {
+              fontSize: AxisTickFontSize,
+              min: 20,
+              max: 30,
+              fontColor: ChartFontColor,
+            },
           },
-          ticks: {
-            fontSize: AxisTickFontSize,
-            min: 20,
-            max: 30,
-            fontColor: ChartFontColor,
-          }
-        }],
+        ],
       },
       plugins: {
         zoom: {
@@ -1947,16 +1976,16 @@ function initTempChart() {
           pan: {
             // Boolean to enable panning
             enabled: true,
-            mode: 'x',
+            mode: "x",
             rangeMin: {
               // Format of min pan range depends on scale type
               x: 0,
-              y: null
+              y: null,
             },
             rangeMax: {
               // Format of max pan range depends on scale type
               x: null,
-              y: null
+              y: null,
             },
           },
           // Container for zoom options
@@ -1965,24 +1994,24 @@ function initTempChart() {
             enabled: true,
             // drag-to-zoom behavior
             drag: false,
-            mode: 'x',
+            mode: "x",
             rangeMin: {
               // Format of min zoom range depends on scale type
               x: 0,
-              y: null
+              y: null,
             },
             rangeMax: {
               // Format of max zoom range depends on scale type
               x: null,
-              y: null
+              y: null,
             },
             // Speed of zoom via mouse wheel
             // (percentage of zoom on a wheel event)
             speed: 0.1,
-          }
-        }
-      }
-    }
+          },
+        },
+      },
+    },
   });
 }
 
