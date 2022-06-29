@@ -1941,6 +1941,12 @@ function initTempChart() {
         xAxes: [
           {
             type: "time",
+            scaleLabel: {
+              display: true,
+              labelString: "time  (hh:mm:ss)",
+              fontSize: AxisFontSize,
+              fontColor: ChartFontColor,
+            },
             time: {
               unitStepSize: 1,
               displayFormats: {
@@ -1950,6 +1956,15 @@ function initTempChart() {
                 hour: "HH",
               },
             },
+            // ticks: {
+            //   fontSize: AxisTickFontSize,
+            //   // beginAtZero: true,
+            //   stepSize: 0.1,
+            //   min: 0,
+            //   max: TEMP_TIME_WINDOW,
+            //   maxTicksLimit: 11,
+            //   fontColor: ChartFontColor,
+            // },
           },
         ],
         yAxes: [
