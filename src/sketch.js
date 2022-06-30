@@ -240,24 +240,11 @@ let CheckForBLE = new Promise(function (resolve, reject) {
 // The wake lock sentinel.
 let WakeLock = null;
 
-
-
-
-
-
-
-
-
-
-
-
-
-
 let locale = localStorage.getItem("language");
 // let locale = "de";
 if (null == locale) {
-  locale = languages[0];
-  localStorage.setItem("language", DDContent.Languages[0]);
+  locale = DDContent.Languages[0];
+  localStorage.setItem("language", locale);
 }
 
 // Page content is ready
@@ -276,22 +263,6 @@ function translateElement(element) {
   const translation = translations[locale][key];
   element.innerText = translation;
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 window.onerror = function (msg, url, lineNo, columnNo, error) {
   console.log(`window.onerror:`);
@@ -434,8 +405,8 @@ window.api.receive("documentCreated", (data) => {
       }
     }
 
-    window.api.send("writeToAccDocument", headerACC + "\n");
-    window.api.send("writeToAccDocument", subHeaderAcc + "\n");
+    window.api.send("writeToAccDocument", headerACC + "\n" + subHeaderAcc + "\n");
+    // window.api.send("writeToAccDocument", subHeaderAcc + "\n");
 
     let headerTemp =
       translations[locale]["logTemperatureHeader"]+`;`+translations[locale]["sampleFrequency"]+`:;` +
@@ -446,8 +417,8 @@ window.api.receive("documentCreated", (data) => {
       `;Hz`;
     let subHeaderTemp = translations[locale]["value"] + `;` + translations[locale]["stamp"];
 
-    window.api.send("writeToTempDocument", headerTemp + "\n");
-    window.api.send("writeToTempDocument", subHeaderTemp + "\n");
+    window.api.send("writeToTempDocument", headerTemp + "\n" + subHeaderTemp + "\n");
+    // window.api.send("writeToTempDocument", subHeaderTemp + "\n");
   }
   console.log(data);
 });
@@ -681,7 +652,7 @@ function draw() {
     DomEl.img.BLEsymbol.src = '../images/logoSB.svg';
     DomEl.img.connectionButton.src = '../images/BLE_disconnect.svg';
     DomEl.img.log.src = '../images/Log.svg';
-    DomEl.span.connection.textContent = 'Disconnect from Sensor';
+    DomEl.span.connection.textContent = translations[locale]["ttDisconnectSensor"];
     activateSettings();
     DomEl.img.log.addEventListener('click', loggingCallback);
     // Request a screen wake lock…
@@ -690,7 +661,7 @@ function draw() {
     DomEl.img.BLEsymbol.src = "../images/logoSB_dis.svg";
     DomEl.img.connectionButton.src = '../images/search.svg';
     DomEl.img.log.src = '../images/Log_gray.svg';
-    DomEl.span.connection.textContent = 'Start scanning for Sensors';
+    DomEl.span.connection.textContent = translations[locale]["ttStartScanning"];
     deactivateSettings();
     DomEl.img.log.removeEventListener('click', loggingCallback);
     // Release the screen wake lock…
@@ -2077,7 +2048,7 @@ function initTempChart() {
             type: "linear",
             scaleLabel: {
               display: true,
-              labelString: "Temperature in °C",
+              labelString: translations[locale]["TemperatureIn"] + " °C",
               fontSize: AxisFontSize,
               fontColor: ChartFontColor,
             },

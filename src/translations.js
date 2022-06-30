@@ -1,10 +1,10 @@
 // https://phrase.com/blog/posts/step-step-guide-javascript-localization/
-// translations[locale][key]
 const translations = {
   // English translations
   en: {
     appTitle: "DataBelt Terminal",
     ttStartScanning: "Start scanning for Sensors",
+    ttDisconnectSensor: "Disconnect from Sensor",
     ttLogging: "Start or stop data logging",
     ttLimitXAxis: "Choose limit of the x axis",
     ttHighPassFilter: "Choose high-pass filter",
@@ -59,11 +59,20 @@ const translations = {
     sampleFrequency: "Sample frequency",
     magnet: "Magnet",
     possibleAxis: ["All Axis", "X Axis", "Y Axis", "Z Axis"],
+    TemperatureIn: "Temperature in",
+
+    pDFUMainText: `Do you really want to put the device in Device Firmware Update (DFU) mode?`,
+    pDFUadditionalText: `This will reset the device and bring it into DFU mode until an update is performed (e.g. with the nRF 
+        Connect app or https://thegecko.github.io/web-bluetooth-dfu/examples/web.html) or the device is reset 
+        by turning it off and on.`,
+
+    pChooseDevice: "Choose a Device",
   },
   // German translations
   de: {
     appTitle: "DataBelt Terminal",
     ttStartScanning: "Nach Sensoren suchen",
+    ttDisconnectSensor: "Sensorverbindung trennen",
     ttLogging: "Date Aufzeichnung starten oder stoppen",
     ttLimitXAxis: "Bereich der X Achse ändern",
     ttHighPassFilter: "Hochpass Filter ändern",
@@ -97,7 +106,7 @@ const translations = {
     temperatureC: "Temperatur",
     normalizedAmplitude: "Normalisierte Amplitude",
     frequencyIn: "Frequenz in",
-    acceleration: "Acceleration",
+    acceleration: "Beschleunigung",
     hpFilter: "HP Filter",
     lpFilter: "LP Filter",
     range: "Bereich",
@@ -118,5 +127,13 @@ const translations = {
     sampleFrequency: "Abtastfrequenz",
     magnet: "Magnet",
     possibleAxis: ["Alle Achsen", "X Achse", "Y Achse", "Z Achse"],
+    TemperatureIn: "Temperatur in",
+
+    pDFUMainText: `Wollen Sie den Sensor wirklich in den Device Firmware Update (DFU) Modus versetzen?`,
+    pDFUadditionalText: `This will reset the device and bring it into DFU mode until an update is performed 
+    Dadurch wird der Sensor zurückgesetzt und in den DFU-Modus gebracht, bis eine Aktualisierung durchgeführt wird.(z.B. mit der nRF 
+    Connect App oder https://thegecko.github.io/web-bluetooth-dfu/examples/web.html) oder der Sensor wird durch an- und ausschalten zurückgesetzt.`,
+
+    pChooseDevice: "Sensor wählen",
   },
 };

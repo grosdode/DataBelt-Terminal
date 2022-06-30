@@ -2,16 +2,18 @@
 <html lang="en">
 <head>
     <title>Device Firmware Update</title>
+    <meta charset="UTF-8" />
     <link rel="stylesheet" type="text/css" href="DFUStyles.css" />
     <meta http-equiv="Content-Security-Policy" content="script-src 'self';">
+    <script src="../translations.js"></script>
 </head>
 <body>
     <div class="mytitlebar" id="drag-region">
       <img class="windowTitleStyle" src="../../images/icon/icon512.png" alt="icon" width="23" height="23"/>
       <p class="windowTitleStyle">Device Firmware Update</p></div>
 
-    <p class="mainText">Do you really want to put the device in <u>D</u>evice <u>F</u>irmware <u>U</u>pdate (DFU) mode?</p>
-    <p class="additionalText">This will reset the device and bring it into DFU mode until an update is performed (e.g. with the nRF 
+    <p class="mainText" data-i18n-key="pDFUMainText">Do you really want to put the device in <u>D</u>evice <u>F</u>irmware <u>U</u>pdate (DFU) mode?</p>
+    <p class="additionalText" data-i18n-key="pDFUadditionalText">This will reset the device and bring it into DFU mode until an update is performed (e.g. with the nRF 
         Connect app or https://thegecko.github.io/web-bluetooth-dfu/examples/web.html) or the device is reset 
         by turning it off and on.</p>
 
