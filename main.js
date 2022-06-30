@@ -151,8 +151,8 @@ function createBLEDevicesWindow() {
 
 function createDFUWindow() {
   DFUWindow = new BrowserWindow({
-    width: 600,
-    height: 240,
+    width: 700,
+    height: 260,
     parent: mainWindow,
     title: "Device Firmware Update",
     modal: true,
