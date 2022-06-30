@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>DataBelt Terminal</title>
+    <title data-i18n-key="appTitle">DataBelt Terminal</title>
     <!-- <link rel="manifest" href="manifest.webmanifest" /> -->
     <link rel="icon" href="../images/icon/icon96.png" />
     <meta name="viewport" content="width=1024" />
@@ -24,13 +24,15 @@
     <!-- Copyright (c) 2013-2016 Nick Downie The MIT License (MIT)  -->
     <!-- <script src="https://cdn.jsdelivr.net/npm/hammerjs@2.0.8"></script> -->
     <script src="../chartjs/chartjs-plugin-zoom.min.js"></script>
+
+    <script src="translations.js"></script>
   </head>
   <body>
     <div class="mytitlebar" id="drag-region">
       <img class="windowTitleStyle" src="../images/icon/icon512.png" alt="icon" width="23" height="23"/>
       <p class="windowTitleStyle">DataBelt Terminal</p></div>
     <header>
-      <h1 id="headerH1">Your System doesn't support "Web Bluetooth" <br>or your PC doesn't 
+      <h1 xdata-i18n-key="NoBLEErrorMessage" id="headerH1">Your System doesn't support "Web Bluetooth" <br>or your PC doesn't 
       have a active Bluetooth interface.<br>Try to use the Chrome browser and activate your Bluetooth.<br>
       Old operating systems (Windows 7, ...) are not supported!<br>
       To check web-bluetooth compatibility visit  <a href="https://github.com/WebBluetoothCG/web-bluetooth/blob/master/implementation-status.md" target="_blank" style="color:#ffffff;">WebBluetoothCG</a>.<br>
@@ -42,19 +44,19 @@
           <li class="clickable">
             <div class="tooltip">
               <img src="../images/search.svg" alt="search for devices" id="img_connection"/>
-              <span class="tooltiptext tooltip-right" id="span_tooltip_connection">Start scanning for Sensors</span>
+              <span class="tooltiptext tooltip-right" id="span_tooltip_connection" data-i18n-key="ttStartScanning">Start scanning for Sensors</span>
             </div>
           </li>
           <li class="clickable">
             <div class="tooltip">
               <img src="../images/Log_gray.svg" alt="start logging" id="img_log" />
-              <span class="tooltiptext tooltip-right">Start or stop data logging</span>
+              <span class="tooltiptext tooltip-right" data-i18n-key="ttLogging">Start or stop data logging</span>
             </div>          
           </li>
           <li class="clickable">
             <div class="tooltip">
             <img src="../images/axisLimit.svg" alt="x axis limit" id="img_axis_limit" />
-            <span class="tooltiptext tooltip-right">Choose limit of the x axis</span>
+            <span class="tooltiptext tooltip-right" data-i18n-key="ttLimitXAxis">Choose limit of the x axis</span>
             <ul class="dropdown" id="AxisLimitDropdownContent_ul">
               </ul>
             </div>          
@@ -69,7 +71,7 @@
             <li class="clickable">
               <div class="tooltip">
                 <img src="../images/HPV_gray.svg" alt="high pass filter" id="img_HPV" />
-                <span class="tooltiptext tooltip-left">Choose high-pass filter</span>          
+                <span class="tooltiptext tooltip-left" data-i18n-key="ttHighPassFilter">Choose high-pass filter</span>          
                 <ul class="dropdown" id="HPVDropdownContent_ul" style="display: none;">
                 </ul>
               </div>
@@ -77,7 +79,7 @@
             <li hidden class="clickable">
               <div class="tooltip">
                 <img src="../images/range_gray.svg" alt="sensor range" id="img_range" />
-                <span class="tooltiptext tooltip-left">Choose sensor range</span>
+                <span class="tooltiptext tooltip-left" data-i18n-key="ttAccRange">Choose sensor range</span>
                 <ul class="dropdown" id="RangeDropdownContent_ul" style="display: none;">
                 </ul>
               </div>
@@ -85,7 +87,7 @@
             <li class="clickable">
               <div class="tooltip">
                 <img src="../images/axis_gray.svg" alt="choose axis" id="img_axis" />
-                <span class="tooltiptext tooltip-left">Choose sensor axis</span>
+                <span class="tooltiptext tooltip-left" data-i18n-key="ttChooseAxis">Choose sensor axis</span>
                 <ul class="dropdown" id="AxisDropdownContent_ul" style="display: none;">
                 </ul>
               </div>
@@ -93,7 +95,7 @@
             <li class="clickable">
               <div class="tooltip">
                 <img src="../images/Temp_gray.svg" alt="temperature capture frequency" id="img_temp" />
-                <span class="tooltiptext tooltip-left">Choose temperature sampling rate</span>
+                <span class="tooltiptext tooltip-left" data-i18n-key="ttTemperatureSamplingRate">Choose temperature sampling rate</span>
                 <ul class="dropdown" id="TempDropdownContent_ul" style="display: none;">
                 </ul>
               </div> 
@@ -105,15 +107,15 @@
               <li>
                 <div class="tooltip">
                   <input type="checkbox" id="inp_check_accelerometer" checked>
-                  <label class="checkbox-label" for="inp_check_accelerometer">Accelerometer</label>
-                  <span class="tooltiptext tooltip-left">Tick to receive Accelerometer data</span>
+                  <label class="checkbox-label" for="inp_check_accelerometer" data-i18n-key="cbAccelerometer">Accelerometer</label>
+                  <span class="tooltiptext tooltip-left" data-i18n-key="ttCheckAccelerometer">Tick to receive Accelerometer data</span>
                 </div>
               </li> 
               <li>
                 <div class="tooltip">
                   <input type="checkbox" id="inp_check_temperature" checked>
-                  <label class="checkbox-label" for="inp_check_temperature">Temperature</label>
-                  <span class="tooltiptext tooltip-left">Tick to receive Temperature data</span>
+                  <label class="checkbox-label" for="inp_check_temperature" data-i18n-key="cbTemperature">Temperature</label>
+                  <span class="tooltiptext tooltip-left" data-i18n-key="ttCheckTemperature">Tick to receive Temperature data</span>
                 </div>
               </li>
             </ul>
@@ -125,14 +127,14 @@
                 <div class="tooltip">
                   <input type="range" min="400" max="3277" value="3277" class="slider" id="inp_sli_accelerometerDivider">
                   <label class="slider-label" id="inp_num_accelerometerDivider" for="inp_sli_accelerometerDivider">3277.00 Hz</label>
-                  <span class="tooltiptext tooltip-left">Slide to change accelerometer acquisition interval</span>
+                  <span class="tooltiptext tooltip-left" data-i18n-key="ttAccelerometerSlider">Slide to change accelerometer acquisition interval</span>
                 </div>
               </li> 
               <li>
                 <div class="tooltip">
                   <input type="range" min="1" max="100" value="43" class="slider" id="inp_sli_temperatureDivider">
                   <label class="slider-label" id="inp_num_temperatureDivider" for="inp_sli_temperatureDivider">0.50 Hz</label>
-                  <span class="tooltiptext tooltip-left">Slide to change temperature acquisition interval</span>
+                  <span class="tooltiptext tooltip-left" data-i18n-key="ttTemperatureSlider">Slide to change temperature acquisition interval</span>
                 </div>
               </li>
             </ul>
@@ -142,21 +144,31 @@
             <div class="clickable">
               <div class="tooltip">
                 <img class="barActionImage" src="../images/dfu_gray.svg" alt="" id="img_dfu">
-                <span class="tooltiptext tooltip-left">Bring Sensor in Device Firmware Update (DFU) mode</span>
+                <span class="tooltiptext tooltip-left" data-i18n-key="ttDFU">Bring Sensor in Device Firmware Update (DFU) mode</span>
               </div>
             </div>
           </div>
         </div>
 
+        <div>
+          <img src="../images/BrecoLogo.png" alt="BrecoLogo"/>
+        </div>
+
+        <div class="tooltip">
+          <img src="../images/world.svg" alt="Language" id="img_Language" />
+          <span class="tooltiptext tooltip-left" data-i18n-key="ttLanguage">Change language</span>
+          <ul class="dropdown" id="LanguageDropdownContent_ul"></ul>
+        </div>  
+
         <div class="tooltip">
           <img src="../images/logoSB_dis.svg" alt="connection state" id="img_BLEsymbol" />
-          <span class="tooltiptext tooltip-left">Connection status</span>
+          <span class="tooltiptext tooltip-left" data-i18n-key="ttConnectionStatus">Connection status</span>
         </div> 
 
         <div class="clickable hide-very-large">
           <div class="tooltip">
             <img src="../images/menu.svg" alt="menu" id="img_menu" class="menu" />
-            <span class="tooltiptext tooltip-left">Show more settings</span>
+            <span class="tooltiptext tooltip-left" data-i18n-key="ttMoreSettings">Show more settings</span>
           </div>
         </div>
       </nav>
@@ -172,9 +184,9 @@
           <div class="grid-child-right">
             <div class="fundamental-tone">
               <div class="container">
-                <div class="input"><p>Inputs</p></div>
-                <div class="trumLength"><p>Span length:</p></div>
-                <div class="beltWeight"><p>Belt weight:</p></div>
+                <div class="input"><p data-i18n-key="pUserInputs">Inputs</p></div>
+                <div class="trumLength"><p data-i18n-key="pSpanLength">Span length:</p></div>
+                <div class="beltWeight"><p data-i18n-key="pBeltWeight">Belt weight:</p></div>
                 <div class="trumLengthValue">
                   <input type="number" id="trumLengthValue" min="1" max="1000000" value="100">
                 </div>
@@ -185,9 +197,9 @@
                 <div class="beltWeightUnit"><p>kg/m</p></div>
               </div>
               <div class="container">
-                <div class="input"><p>Outputs</p></div>
-                <div class="trumLength"><p>Frequency:</p></div>
-                <div class="beltWeight"><p>Span force:</p></div>
+                <div class="input"><p data-i18n-key="pOutputs">Outputs</p></div>
+                <div class="trumLength"><p data-i18n-key="pFrequency">Frequency:</p></div>
+                <div class="beltWeight"><p data-i18n-key="pSpanForce">Span force:</p></div>
                 <div class="trumLengthValue"><p id="toneFrequency">0</p></div>
                 <div class="beltWeightValue"><p id="trumForce">0</p></div>
                 <div class="trumLengthUnit"><p>Hz</p></div>
@@ -202,19 +214,19 @@
     <ul class="bottomBar">
       <li>
         <ul>
-          <li><p>Status: </p></li>
-          <li><p id="statusText">Disconnected</p></li>
+          <li><p data-i18n-key="pStatus">Status: </p></li>
+          <li><p id="statusText" data-i18n-key="pStatusMessage">Disconnected</p></li>
         </ul>
       </li>
       <li>
         <ul>
-          <li><p>Setup: </p></li>
+          <li><p data-i18n-key="pSetup">Setup: </p></li>
           <li><p id="setupInfoText"></p></li>
         </ul>
       </li>
       <li>
         <ul>
-          <li><p>Magnet:</p></li>
+          <li><p data-i18n-key="pMagnet">Magnet:</p></li>
           <li><p id="MagText"></p></li>
         </ul>
       </li>
@@ -225,7 +237,7 @@
       </li>
       <li class="VersionNumber">
         <ul>
-          <li><p id="versionText">Version</p></li>
+          <li><p id="versionText" data-i18n-key="pVersion">Version</p></li>
         </ul>
       </li>
     </ul>

@@ -48,9 +48,9 @@ const DDContent = {
   ADXL372accLpFilters: [200, 400, 800, 1600, 3200],
   AccRanges: [100, 200, 400],
   ADXL372Range: [' ', 200, ' '],
-  PossibleAxis: ["All Axis", "X Axis", "Y Axis", "Z Axis"],
   PossibleAxisLimits: [50, 100, 200, 300, 500, 750, 1000, 1600],
   TempSampling: ["0.25", "0.5", "1", "2"],
+  Languages: ["en","de"],
 }
 
 const UsedAccelerometer = ["ADXL_372"];
@@ -152,6 +152,7 @@ const DomEl = {
     axis: document.getElementById("AxisDropdownContent_ul"),
     axisLimit: document.getElementById("AxisLimitDropdownContent_ul"),
     temp: document.getElementById("TempDropdownContent_ul"),
+    language: document.getElementById("LanguageDropdownContent_ul"),
   },
   input: {
     trumLength: document.getElementById("trumLengthValue"),
@@ -239,6 +240,59 @@ let CheckForBLE = new Promise(function (resolve, reject) {
 // The wake lock sentinel.
 let WakeLock = null;
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+let locale = localStorage.getItem("language");
+// let locale = "de";
+if (null == locale) {
+  locale = languages[0];
+  localStorage.setItem("language", DDContent.Languages[0]);
+}
+
+// Page content is ready
+document.addEventListener("DOMContentLoaded", () => {
+  translateHTMLElements();
+});
+
+function translateHTMLElements()
+{
+  document.querySelectorAll("[data-i18n-key]").forEach(translateElement);
+}
+
+// Replace the inner text of the given HTML element
+function translateElement(element) {
+  const key = element.getAttribute("data-i18n-key");
+  const translation = translations[locale][key];
+  element.innerText = translation;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 window.onerror = function (msg, url, lineNo, columnNo, error) {
   console.log(`window.onerror:`);
   console.log('->msg:' + msg);
@@ -262,16 +316,21 @@ function setup() {
       initTempChart();
       setupHPVDropdownContent(DDContent.ADXL372accFilters);
       setupRangeDropdownContent(DDContent.ADXL372Range);
-      setupAxisDropdownContent(DDContent.PossibleAxis);
+      // setupAxisDropdownContent(DDContent.PossibleAxis);
+      setupAxisDropdownContent(translations[locale]["possibleAxis"]);
       setupAxisLimitDropdownContent(DDContent.PossibleAxisLimits);
+      setupLanguageDropdownContent(DDContent.Languages);
       DomEl.dropDown.axisLimit.style.display = "none";
+      DomEl.dropDown.language.style.display = "none";
       document.getElementById("img_axis_limit").addEventListener('click', showAxisLimitDropdownContent);
+      document.getElementById("img_Language").addEventListener('click', showLanguageDropdownContent);
       setupTempDropdownContent(DDContent.TempSampling);
       DomEl.dropDown.HPV.addEventListener('click', (param) => updateChar8Bit(Characteristics.acc.filter, param.target.id.replace(/\D/g, '')));
       DomEl.dropDown.range.addEventListener('click', (param) => updateChar8Bit(Characteristics.acc.range, param.target.id.replace(/\D/g, '')));
       DomEl.dropDown.axis.addEventListener('click', (param) => updateChar8Bit(Characteristics.acc.axis, param.target.id.replace(/\D/g, '')));
       DomEl.dropDown.axisLimit.addEventListener('click', (param) => setXAxisLimit(param.target.id.replace(/\D/g, '')));
       DomEl.dropDown.temp.addEventListener('click', (param) => updateTemperatureChar(param.target.id.replace(/\D/g, '')));
+      DomEl.dropDown.language.addEventListener('click', (param) => updateLanguage(param.target.id.replace(/\D/g, '')));
     }
   }, function (err) {
     DomEl.img.connectionButton.className = 'barActionInactiveImage';
@@ -299,7 +358,8 @@ const requestWakeLock = async () => {
 
 function setXAxisLimit(dropdownID) {
   AccChart.resetZoom();
-  AccChart.options.scales.xAxes[0].ticks.max = DDContent.PossibleAxisLimits[dropdownID];
+  // AccChart.options.scales.xAxes[0].ticks.max = DDContent.PossibleAxisLimits[dropdownID];
+  AccChart.options.scales.xAxes[0].ticks.max = translations[locale]["possibleAxis"][dropdownID];
   AccChart.options.scales.xAxes[0].ticks.stepSize = DDContent.PossibleAxisLimits[dropdownID] / 20;
   AccChart.update();
   localStorage.setItem('xLimit', dropdownID);
@@ -339,38 +399,38 @@ window.api.receive("documentCreated", (data) => {
         Characteristics.acc.lpFilter.value.getUint8(0)
       ];
     Range = DDContent.AccRanges[Characteristics.acc.range.value.getUint8(0)];
-    Axis = DDContent.PossibleAxis[Characteristics.acc.axis.value.getUint8(0)];
+    // Axis = DDContent.PossibleAxis[Characteristics.acc.axis.value.getUint8(0)];
+    Axis = translations[locale]["possibleAxis"][Characteristics.acc.axis.value.getUint8(0)];
     SmapleFrequencyAcc =
       SensorBaseFrequency /
       GlobalFrequencyDivider /
       Characteristics.acc.divider.value.getUint8(0);
 
     let headerACC =
-      `log file of Accelerometer;Sample Frequenzy:;` +
       SmapleFrequencyAcc +
-      `;Hz;HP Filter:;` +
+      `;Hz;`+translations[locale]["hpFilter"]+`:;` +
       HP_Filter +
-      `;Hz;LP Filter:;` +
+      `;Hz;`+translations[locale]["lpFilter"]+`:;` +
       LP_Filter +
-      `;Hz;Range:;` +
+      `;Hz;`+translations[locale]["range"]+`:;` +
       Range +
-      `;g;Axis:;` +
+      `;g;`+translations[locale]["axis"]+`:;` +
       Axis +
-      `;Vaule Divider to get [g]:;` +
+      `;`+translations[locale]["vauleDividerToGetG"]+`:;` +
       AccVauleDivider;
 
     let subHeaderAcc;
     if (SoftwareVersion >= 3) {
       if (Characteristics.acc.axis.value.getUint8(0) >= 1) {
-        subHeaderAcc = Axis + `;Mag;Stamp`;
+        subHeaderAcc = Axis + `;`+translations[locale]["magnet"]+`;` + translations[locale]["stamp"];
       } else {
-        subHeaderAcc = `x;y;z;Mag;Stamp`;
+        subHeaderAcc = `x;y;z;`+translations[locale]["magnet"]+`;` + translations[locale]["stamp"];
       }
     } else {
       if (Characteristics.acc.axis.value.getUint8(0) >= 1) {
-        subHeaderAcc = Axis + `;Stamp`;
+        subHeaderAcc = Axis + `;` + translations[locale]["stamp"];
       } else {
-        subHeaderAcc = `x;y;z;Stamp`;
+        subHeaderAcc = `x;y;z;` + translations[locale]["stamp"];
       }
     }
 
@@ -378,13 +438,13 @@ window.api.receive("documentCreated", (data) => {
     window.api.send("writeToAccDocument", subHeaderAcc + "\n");
 
     let headerTemp =
-      `log file of Temperature Sonsor;Sample Frequenzy:;` +
+      translations[locale]["logTemperatureHeader"]+`;`+translations[locale]["sampleFrequency"]+`:;` +
       SensorBaseFrequency +
       `/` +
       Characteristics.temp.divider.value.getUint16(0, true) *
         GlobalFrequencyDivider +
       `;Hz`;
-    let subHeaderTemp = `value;Stamp`;
+    let subHeaderTemp = translations[locale]["value"] + `;` + translations[locale]["stamp"];
 
     window.api.send("writeToTempDocument", headerTemp + "\n");
     window.api.send("writeToTempDocument", subHeaderTemp + "\n");
@@ -427,6 +487,13 @@ function updateTemperatureChar(newvalueIndex) {
   newDivider = Math.round(newDivider);
   updateChar16Bit(Characteristics.temp.divider, newDivider);
 }
+
+function updateLanguage(newvalueIndex) {
+  locale = DDContent.Languages[newvalueIndex];
+  localStorage.setItem("language", locale);
+  translateHTMLElements();
+}
+
 /************************************************************************/
 // dropdown
 window.onclick = function (event) {
@@ -444,6 +511,9 @@ window.onclick = function (event) {
   }
   if (!(event.target.id === 'img_temp')) {
     DomEl.dropDown.temp.style.display = "none";
+  }
+  if (!(event.target.id === "img_Language")) {
+    DomEl.dropDown.language.style.display = "none";
   }
   // console.log(event);
 }
@@ -488,8 +558,16 @@ function showTempDropdownContent() {
   }
 }
 
+function showLanguageDropdownContent() {
+  if (DomEl.dropDown.language.style.display === "none") {
+    DomEl.dropDown.language.style.display = "block";
+  } else {
+    DomEl.dropDown.language.style.display = "none";
+  }
+}
+
 function setupHPVDropdownContent(filterlist) {
-  DomEl.dropDown.HPV.innerHTML = `<li><p id="0" class="dropdownItem">off</p></li>`;
+  DomEl.dropDown.HPV.innerHTML = `<li><p id="0" class="dropdownItem">`+translations[locale]["off"]+`</p></li>`;
   let filterlistlength = filterlist.length;
   for (let index = 1; index < filterlistlength; index++) {
     DomEl.dropDown.HPV.innerHTML += `<li><p id="f` + index + `" class="dropdownItem">` + filterlist[index] + `Hz</p></li>`;
@@ -535,6 +613,19 @@ function setupTempDropdownContent(tempSamplinglist) {
   let tempSamplinglistlength = tempSamplinglist.length;
   for (let index = 0; index < tempSamplinglistlength; index++) {
     DomEl.dropDown.temp.innerHTML += `<li><p id="t` + index + `" class="dropdownItem">` + tempSamplinglist[index] + ` Hz</p></li>`;
+  }
+}
+
+function setupLanguageDropdownContent(languagelist) {
+  DomEl.dropDown.language.innerHTML = ``;
+  let languagelistlength = languagelist.length;
+  for (let index = 0; index < languagelistlength; index++) {
+    DomEl.dropDown.language.innerHTML +=
+      `<li><p id="ll` +
+      index +
+      `" class="dropdownItem">` +
+      languagelist[index] +
+      `</p></li>`;
   }
 }
 /************************************************************************/
@@ -651,7 +742,7 @@ window.api.receive("performDFU", (data) => {
 
 function connectingToBLEDevice(device) { // have to be a promise
   console.log("Connecting to GATT Server...");
-  DomEl.p.statusText.innerHTML = `Connecting to GATT Server`;
+  DomEl.p.statusText.innerHTML = translations[locale]["connectingGATT"];
   BluetoothDevice = device;
   BluetoothDevice.addEventListener("gattserverdisconnected", onDisconnected);
   return device.gatt.connect();
@@ -659,13 +750,13 @@ function connectingToBLEDevice(device) { // have to be a promise
 
 function readBLEServices(server) {
   console.log("Getting Services...");
-  DomEl.p.statusText.innerHTML = `Getting Services`;
+  DomEl.p.statusText.innerHTML = translations[locale]["gettingServices"];
   return server.getPrimaryServices();
 }
 
 function readBLECharacteristics(services) {
   console.log("Getting Characteristics...");
-  DomEl.p.statusText.innerHTML = `Getting Characteristics`;
+  DomEl.p.statusText.innerHTML = translations[locale]["gettingCharacteristics"];
   let queue = Promise.resolve();
   console.log("services: ", services);
   services.forEach((service) => {
@@ -685,7 +776,7 @@ function readBLECharacteristics(services) {
                   console.warn(
                     `Fail while characteristics.acc.filter.readValue()`
                   );
-                  DomEl.p.statusText.innerHTML = `Connection failed`;
+                  DomEl.p.statusText.innerHTML = translations[locale]["connectionFailed"];
                   disconnetDiviceClean();
                   return;
                 });
@@ -732,7 +823,7 @@ function readBLECharacteristics(services) {
                   console.warn(
                     `Fail while accelerometerDataCharacteristic.startNotifications()`
                   );
-                  DomEl.p.statusText.innerHTML = `Connection failed`;
+                  DomEl.p.statusText.innerHTML = translations[locale]["connectionFailed"];
                   disconnetDiviceClean();
                   return;
                 });
@@ -844,7 +935,7 @@ function readBLECharacteristics(services) {
         }
         IsConnected = true;
         draw();
-        DomEl.p.statusText.innerHTML = `Connection complete`;
+        DomEl.p.statusText.innerHTML = translations[locale]["connectionComplete"];
       })
     );
   });
@@ -884,7 +975,7 @@ function onButtonClick() {
   window.api.send("searchBLEDevices", "start searching");
 
   console.log('Requesting Bluetooth Device...');
-  DomEl.p.statusText.innerHTML = `Scanning for Bluetooth Device`;
+  DomEl.p.statusText.innerHTML = translations[locale]["scanningForDevices"];
   navigator.bluetooth.requestDevice(options)
     .then(device => {
       return connectingToBLEDevice(device);
@@ -897,7 +988,7 @@ function onButtonClick() {
     })
     .catch(error => {
       console.warn('Fail: ' + error);
-      DomEl.p.statusText.innerHTML = "Connection failed";
+      DomEl.p.statusText.innerHTML = translations[locale]["connectionFailed"];
       draw();
     });
 }
@@ -912,7 +1003,7 @@ function reconnect(device) {
     })
     .catch((error) => {
       console.warn("Fail: " + error);
-      DomEl.p.statusText.innerHTML = "Reconnection failed";
+      DomEl.p.statusText.innerHTML = translations[locale]["reConnectionFailed"];
       draw();
     });
 }
@@ -946,7 +1037,7 @@ function onDisconnectButtonClick() {
 
 function onDisconnected(event) {
   console.log('Bluetooth Device disconnected');
-  DomEl.p.statusText.innerHTML = `Disconnected`;
+  DomEl.p.statusText.innerHTML = translations[locale]["disconnected"];
   IsConnected = false;
   logging(true);
   draw();
@@ -976,7 +1067,14 @@ function handleaccelerometerDataCharacteristicChanged(event) {
       AccChart.data.datasets.splice(1, 2);
     }
 
-    if (AccChart.data.datasets[0].label !== DDContent.PossibleAxis[event.target.value.getUint8(0)]) { AccChart.data.datasets[0].label = DDContent.PossibleAxis[event.target.value.getUint8(0)]; }
+    // if (AccChart.data.datasets[0].label !== DDContent.PossibleAxis[event.target.value.getUint8(0)]) { AccChart.data.datasets[0].label = DDContent.PossibleAxis[event.target.value.getUint8(0)]; }
+    if (
+      AccChart.data.datasets[0].label !==
+      translations[locale]["possibleAxis"][event.target.value.getUint8(0)]
+    ) {
+      AccChart.data.datasets[0].label =
+        translations[locale]["possibleAxis"][event.target.value.getUint8(0)];
+    }
 
     let logdataAccTemp = '';
     for (let i = 1; i < dataValueLength - 4; i += 2) {
@@ -1213,7 +1311,7 @@ function handleAccelerometerFilterCharacteristicChanged(event) {
       .catch(error => {
         console.warn('Fail: ' + error);
         console.warn(`Fail while Characteristics.acc.lpFilter.readValue()`);
-        DomEl.p.statusText.innerHTML = `Connection failed`;
+        DomEl.p.statusText.innerHTML = translations[locale]["connectionFailed"];
         disconnetDiviceClean();
         return;
       });
@@ -1228,7 +1326,7 @@ function handleAccelerometerLpFilterCharacteristicChanged(event) {
       .catch(error => {
         console.warn('Fail: ' + error);
         console.warn(`Fail while Characteristics.acc.range.readValue()`);
-        DomEl.p.statusText.innerHTML = `Connection failed`;
+        DomEl.p.statusText.innerHTML = translations[locale]["connectionFailed"];
         disconnetDiviceClean();
         return;
       });
@@ -1243,7 +1341,7 @@ function handleaccelerometerRangeCharacteristicChanged(event) {
       .catch(error => {
         console.warn('Fail: ' + error);
         console.warn(`Fail while accelerometerDividerCharacteristic.readValue()`);
-        DomEl.p.statusText.innerHTML = `Connection failed`;
+        DomEl.p.statusText.innerHTML = translations[locale]["connectionFailed"];
         disconnetDiviceClean();
         return;
       });
@@ -1257,7 +1355,7 @@ function handleaccelerometerDividerCharacteristicChanged(event) {
       .catch(error => {
         console.warn('Fail: ' + error);
         console.warn(`Fail while accelerometerAxisCharacteristic.readValue()`);
-        DomEl.p.statusText.innerHTML = `Connection failed`;
+        DomEl.p.statusText.innerHTML = translations[locale]["connectionFailed"];
         disconnetDiviceClean();
         return;
       });
@@ -1269,7 +1367,7 @@ function handleaccelerometerDividerCharacteristicChanged(event) {
         .catch(error => {
           console.warn('Fail: ' + error);
           console.warn(`Fail while Characteristics.acc.lpFilter.readValue()`);
-          DomEl.p.statusText.innerHTML = `Connection failed`;
+          DomEl.p.statusText.innerHTML = translations[locale]["connectionFailed"];
           disconnetDiviceClean();
           return;
         });
@@ -1279,13 +1377,13 @@ function handleaccelerometerDividerCharacteristicChanged(event) {
 
 function handleaccelerometerAxisCharacteristicChanged(event) {
   handleSetupCharacteristicChanged();
-  console.log('Accelerometer transmitting Axis = ' + DDContent.PossibleAxis[Characteristics.acc.axis.value.getUint8(0)]);
+  console.log('Accelerometer transmitting Axis = ' + translations["en"]["possibleAxis"][Characteristics.acc.axis.value.getUint8(0)]);
   if (InitialCharacteristicRead) {
     Characteristics.acc.type.readValue()
       .catch(error => {
         console.warn('Fail: ' + error);
         console.warn(`Fail while accelerometerTypeCharacteristic.readValue()`);
-        DomEl.p.statusText.innerHTML = `Connection failed`;
+        DomEl.p.statusText.innerHTML = translations[locale]["connectionFailed"];
         disconnetDiviceClean();
         return;
       });
@@ -1299,7 +1397,7 @@ function handleaccelerometerTypeCharacteristicChanged(event) {
       .catch(error => {
         console.warn('Fail: ' + error);
         console.warn(`Fail while accelerometerResolutionCharacteristic.readValue()`);
-        DomEl.p.statusText.innerHTML = `Connection failed`;
+        DomEl.p.statusText.innerHTML = translations[locale]["connectionFailed"];
         disconnetDiviceClean();
         return;
       });
@@ -1314,7 +1412,7 @@ function handleaccelerometerResolutionCharacteristicChanged(event) {
       .catch(error => {
         console.warn('Fail: ' + error);
         console.warn(`Fail while accelerometerBinCharacteristic.readValue()`);
-        DomEl.p.statusText.innerHTML = `Connection failed`;
+        DomEl.p.statusText.innerHTML = translations[locale]["connectionFailed"];
         disconnetDiviceClean();
         return;
       });
@@ -1328,7 +1426,7 @@ function handleaccelerometerBinCharacteristicChanged(event) {
       .catch(error => {
         console.warn('Fail: ' + error);
         console.warn(`Fail while temperatureDividerCharacteristic.readValue()`);
-        DomEl.p.statusText.innerHTML = `Connection failed`;
+        DomEl.p.statusText.innerHTML = translations[locale]["connectionFailed"];
         disconnetDiviceClean();
         return;
       });
@@ -1342,7 +1440,7 @@ function handletemperatureDividerCharacteristicChanged(event) {
       .catch(error => {
         console.warn('Fail: ' + error);
         console.warn(`Fail while voltageDividerCharacteristic.readValue()`);
-        DomEl.p.statusText.innerHTML = `Connection failed`;
+        DomEl.p.statusText.innerHTML = translations[locale]["connectionFailed"];
         disconnetDiviceClean();
         return;
       });
@@ -1356,7 +1454,7 @@ function handlevoltageDividerCharacteristicChanged(event) {
       .catch(error => {
         console.warn('Fail: ' + error);
         console.warn(`Fail while infoHardwareVersionCharacteristic.readValue()`);
-        DomEl.p.statusText.innerHTML = `Connection failed`;
+        DomEl.p.statusText.innerHTML = translations[locale]["connectionFailed"];
         disconnetDiviceClean();
         return;
       });
@@ -1375,7 +1473,7 @@ function handleinfoHardwareVersionCharacteristicChanged(event) {
       .catch(error => {
         console.warn('Fail: ' + error);
         console.warn(`Fail while infoSoftwareVersionCharacteristic.readValue()`);
-        statusTexwarnt_p.innerHTML = `Connection failed`;
+        statusTexwarnt_p.innerHTML = translations[locale]["connectionFailed"];
         disconnetDiviceClean();
         return;
       });
@@ -1390,7 +1488,7 @@ function handleinfoSoftwareVersionCharacteristicChanged(event) {
       .catch(error => {
         console.warn('Fail: ' + error);
         console.warn(`Fail while infoGlobalDividerCharacteristic.readValue()`);
-        DomEl.p.statusText.innerHTML = `Connection failed`;
+        DomEl.p.statusText.innerHTML = translations[locale]["connectionFailed"];
         disconnetDiviceClean();
         return;
       });
@@ -1402,33 +1500,33 @@ function handleinfoGlobalDividerCharacteristicChanged(event) {
   console.log('Global frequency divider = ' + GlobalFrequencyDivider);
   if (InitialCharacteristicRead) {
     if (document.getElementById("inp_check_temperature").checked) {
-      Characteristics.temp.data.startNotifications()
-        .catch(error => {
-          console.warn('Fail: ' + error);
-          console.warn(`Fail while temperatureDataCharacteristic.startNotifications()`);
-          DomEl.p.statusText.innerHTML = `Connection failed`;
-          disconnetDiviceClean();
-          return;
-        });
+      Characteristics.temp.data.startNotifications().catch((error) => {
+        console.warn("Fail: " + error);
+        console.warn(
+          `Fail while temperatureDataCharacteristic.startNotifications()`
+        );
+        DomEl.p.statusText.innerHTML = translations[locale]["connectionFailed"];
+        disconnetDiviceClean();
+        return;
+      });
     }
     setTimeout(() => {
-      Characteristics.dfu.dfu.startNotifications()
-        .catch(error => {
-          console.warn('Fail: ' + error);
-          console.warn(`Fail while dfuCharacteristic.startNotifications()`);
-          DomEl.p.statusText.innerHTML = `Connection failed`;
-          disconnetDiviceClean();
-          return;
-        });
+      Characteristics.dfu.dfu.startNotifications().catch((error) => {
+        console.warn("Fail: " + error);
+        console.warn(`Fail while dfuCharacteristic.startNotifications()`);
+        DomEl.p.statusText.innerHTML = translations[locale]["connectionFailed"];
+        disconnetDiviceClean();
+        return;
+      });
     }, 1000);
-    
+
     // setTimeout(() => {
     //   if (document.getElementById("inp_check_voltage").checked) {
     //     voltageDataCharacteristic.startNotifications()
     //       .catch(error => {
     //         console.warn('Fail: ' + error);
     //         console.warn(`Fail while voltageDataCharacteristic.startNotifications()`);
-    //         statusText_p.innerHTML = `Connection failed`;
+    //         statusText_p.innerHTML = translations[locale]["connectionFailed"];
     //         bluetoothDevice.gatt.disconnect();
     //         return;
     //       });
@@ -1577,24 +1675,25 @@ function handleSetupCharacteristicChanged() {
       );
 
       valueString +=
-        "HP Filter: " +
+        translations[locale]["hpFilter"] +": " +
         DDContent.ADXL372accFilters[Characteristics.acc.filter.value.getUint8(0)] +
         "Hz,";
       valueString +=
-        "LP Filter: " +
+        translations[locale]["hpFilter"] +": " +
         DDContent.ADXL372accLpFilters[
           Characteristics.acc.lpFilter.value.getUint8(0)
         ] +
         "Hz,";
       valueString +=
-        " Range: +-" +
+        " " +translations[locale]["range"] +": +-" +
         DDContent.AccRanges[Characteristics.acc.range.value.getUint8(0)] +
         "g,";
       valueString +=
-        " Axis: " +
-        DDContent.PossibleAxis[Characteristics.acc.axis.value.getUint8(0)];
+        " "+ translations[locale]["axis"] +": " +
+        // DDContent.PossibleAxis[Characteristics.acc.axis.value.getUint8(0)];
+        translations[locale]["possibleAxis"][Characteristics.acc.axis.value.getUint8(0)];
       valueString +=
-        " Temperature: " + Number(SmapleFrequencyTemp).toFixed(2) + `Hz`;
+        " "+ translations[locale]["temperatureC"] +": " + Number(SmapleFrequencyTemp).toFixed(2) + `Hz`;
 
       Temperature_time_divider = SmapleFrequencyTemp;
 
@@ -1756,33 +1855,35 @@ function initAccChart() {
     xAxesTicksStepSize = DDContent.PossibleAxisLimits[xLimitStored] / 20;
   }
 
-  AccChart = new Chart(document.getElementById('accChart').getContext('2d'), {
-    type: 'line',
+  AccChart = new Chart(document.getElementById("accChart").getContext("2d"), {
+    type: "line",
     data: {
-      datasets: [{
-        label: 'accData',
-        data: AccChartData,
-        backgroundColor: 'rgb(255, 255, 255)',
-        borderColor: 'rgb(255, 255, 255)',
-        fill: false,
-        pointHoverBackgroundColor: 'rgb(218, 15, 15)',
-        borderWidth: 3
-      }]
+      datasets: [
+        {
+          label: "accData",
+          data: AccChartData,
+          backgroundColor: "rgb(255, 255, 255)",
+          borderColor: "rgb(255, 255, 255)",
+          fill: false,
+          pointHoverBackgroundColor: "rgb(218, 15, 15)",
+          borderWidth: 3,
+        },
+      ],
     },
     options: {
       elements: {
         line: {
-          tension: 0.2 // disables bezier curves
+          tension: 0.2, // disables bezier curves
         },
         point: {
           radius: 1,
-          hitRadius: 5
-        }
+          hitRadius: 5,
+        },
       },
       maintainAspectRatio: false,
       title: {
         display: true,
-        text: 'Acceleration',
+        text: translations[locale]["acceleration"],
         fontSize: TitleFontSize,
         fontColor: ChartFontColor,
       },
@@ -1790,43 +1891,47 @@ function initAccChart() {
         display: false,
       },
       animation: {
-        duration: 0 // general animation time
+        duration: 0, // general animation time
       },
       hover: {
         animationDuration: 0, // duration of animations when hovering an item
       },
-      responsiveAnimationDuration: 0, // animation duration after a resize  
+      responsiveAnimationDuration: 0, // animation duration after a resize
       scales: {
-        xAxes: [{
-          type: 'linear',
-          scaleLabel: {
-            display: true,
-            labelString: 'Frequency in Hz',
-            fontSize: AxisFontSize,
-            fontColor: ChartFontColor,
+        xAxes: [
+          {
+            type: "linear",
+            scaleLabel: {
+              display: true,
+              labelString: translations[locale]["frequencyIn"] + " Hz",
+              fontSize: AxisFontSize,
+              fontColor: ChartFontColor,
+            },
+            ticks: {
+              fontSize: AxisTickFontSize,
+              beginAtZero: true,
+              stepSize: xAxesTicksStepSize,
+              max: xAxesTicksMax,
+              fontColor: ChartFontColor,
+            },
           },
-          ticks: {
-            fontSize: AxisTickFontSize,
-            beginAtZero: true,
-            stepSize: xAxesTicksStepSize,
-            max: xAxesTicksMax,
-            fontColor: ChartFontColor,
-          }
-        }],
-        yAxes: [{
-          type: 'linear',
-          scaleLabel: {
-            display: true,
-            labelString: 'Normalized amplitude',
-            fontSize: AxisFontSize,
-            fontColor: ChartFontColor,
+        ],
+        yAxes: [
+          {
+            type: "linear",
+            scaleLabel: {
+              display: true,
+              labelString: translations[locale]["normalizedAmplitude"],
+              fontSize: AxisFontSize,
+              fontColor: ChartFontColor,
+            },
+            ticks: {
+              fontSize: AxisTickFontSize,
+              beginAtZero: true,
+              fontColor: ChartFontColor,
+            },
           },
-          ticks: {
-            fontSize: AxisTickFontSize,
-            beginAtZero: true,
-            fontColor: ChartFontColor,
-          },
-        }],
+        ],
       },
       plugins: {
         zoom: {
@@ -1837,12 +1942,12 @@ function initAccChart() {
             rangeMin: {
               // Format of min pan range depends on scale type
               x: 0,
-              y: 0
+              y: 0,
             },
             rangeMax: {
               // Format of max pan range depends on scale type
               x: null,
-              y: null
+              y: null,
             },
           },
           // Container for zoom options
@@ -1851,24 +1956,24 @@ function initAccChart() {
             enabled: false,
             // drag-to-zoom behavior
             drag: false,
-            mode: 'xy',
+            mode: "xy",
             rangeMin: {
               // Format of min zoom range depends on scale type
               x: 0,
-              y: 0
+              y: 0,
             },
             rangeMax: {
               // Format of max zoom range depends on scale type
               x: null,
-              y: null
+              y: null,
             },
             // Speed of zoom via mouse wheel
             // (percentage of zoom on a wheel event)
             speed: 0.03,
-          }
-        }
-      }
-    }
+          },
+        },
+      },
+    },
   });
 }
 
@@ -1901,7 +2006,7 @@ function initTempChart() {
       maintainAspectRatio: false,
       title: {
         display: true,
-        text: "Temperature",
+        text: translations[locale]["temperatureC"],
         fontSize: TitleFontSize,
         fontColor: ChartFontColor,
       },
@@ -1943,7 +2048,7 @@ function initTempChart() {
             type: "time",
             scaleLabel: {
               display: true,
-              labelString: "time  (hh:mm:ss)",
+              labelString: translations[locale]["time"] + "  (hh:mm:ss)",
               fontSize: AxisFontSize,
               fontColor: ChartFontColor,
             },
