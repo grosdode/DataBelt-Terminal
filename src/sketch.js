@@ -706,8 +706,14 @@ function requestDFUMode() {
 
 window.api.receive("performDFU", (data) => {
   if (data === "yes") {
-    console.log("dfuCharacteristic =" + Characteristics.dfu.dfu);
-    Characteristics.dfu.dfu.writeValue(DfuCommand);
+    Characteristics.dfu.dfu
+      .writeValue(DfuCommand)
+      .then((_) => {
+        disconnetDiviceClean();
+      })
+      .catch((error) => {
+        console.log("Characteristics.dfu.dfu.writeValue error " + error);
+      });
   }
 });
 
@@ -1012,6 +1018,7 @@ function onDisconnected(event) {
   IsConnected = false;
   logging(true);
   draw();
+  InitialCharacteristicRead = true;
   if (!ShouldDisconnect && BluetoothDevice) 
   {
     console.log("try to reconnect");
